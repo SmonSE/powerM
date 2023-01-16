@@ -40,7 +40,8 @@ class powerMView extends WatchUi.DataField {
     var calcAscent = 0;
 
     var nowAscent = false;
-    var getAscentNow = 0;
+    var getAscentNowA = 0;
+    var getAscentNowD = 0;
 
     var down;
     var up;
@@ -231,7 +232,9 @@ class powerMView extends WatchUi.DataField {
 
         if (checkMValue >= checkNewDistance) {
             if (nowAscent == false) {
-                getAscentNow = aValue.toDouble();
+                getAscentNowA = aValue.toDouble();
+                getAscentNowD = dValue.toDouble();
+                getAscentNowD *= -1;
                 nowAscent = true;
             }
 
@@ -241,21 +244,19 @@ class powerMView extends WatchUi.DataField {
             
             if (count == 2) {
                 if(actInfo has :totalAscent){
-                    if(aValue > 0.00000001){
+                    if(aValue.toDouble() > 0.00000001){
                         var currentAscent = aValue.toDouble();
-                        calcAscent = currentAscent - getAscentNow; 
-                        //Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
+                        calcAscent = currentAscent - getAscentNowA; 
+                        Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
                         nowAscent = false;
-                    }
-                    // Do not know if this is also at PowerMeter
-                    if (dValue < 0.000000) {
-                        var currentAscent = dValue.toDouble();
-                        calcAscent = currentAscent - getAscentNow; 
-                        //Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
+                    } else if (dValue.toDouble() < 0.000000) {
+                        var currentAscent = dValue.toDouble();    // convert Descent to negativ value 
+                        calcAscent = currentAscent - getAscentNowD; 
+                        Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
                         nowAscent = false;
                     } else {
-                        calcAscent = 0.000000;
-                        //Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
+                        //calcAscent = 0.000000;
+                        Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
                     }
                     count = 0;
                 }
