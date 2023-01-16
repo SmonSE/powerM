@@ -31,8 +31,8 @@ class powerMView extends WatchUi.DataField {
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var powerTotal = 0;
-    var powerAir = 0;
-    var powerRoll = 0;
+    var powerWind = 0;
+    var powerResistance = 0;
     var powerRise = 0;
 
     var newDistance = 0.00;
