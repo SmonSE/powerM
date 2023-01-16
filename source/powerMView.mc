@@ -14,6 +14,7 @@ class powerMView extends WatchUi.DataField {
     hidden var wValue as Numeric;   // Watt
     hidden var aValue as Numeric;   // Ascent
     hidden var dValue as Numeric;   // Descent
+    hidden var hValue as Numeric;   // Heartrate
 
     var count = 0;                  // Time Counter
     var drop = 0;                   // Höhenunterschied 
@@ -43,9 +44,6 @@ class powerMView extends WatchUi.DataField {
     var getAscentNowA = 0;
     var getAscentNowD = 0;
 
-    var down;
-    var up;
-
     //getActivityInfo
     var actInfo = Activity.getActivityInfo();
     var speedRounded;
@@ -53,6 +51,7 @@ class powerMView extends WatchUi.DataField {
     var currentWatt;
     var ascent;
     var descent;
+    var hr;
 
     function initialize() {
         DataField.initialize();
@@ -61,6 +60,7 @@ class powerMView extends WatchUi.DataField {
         wValue = 0.00f;
         aValue = 0.00f;
         dValue = 0.00f;
+        hValue = 0.00f;
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -87,21 +87,30 @@ class powerMView extends WatchUi.DataField {
         // Use the generic, centered layout
         } else {
             View.setLayout(Rez.Layouts.MainLayout(dc));
-            
+
             var valueView = View.findDrawableById("speed");
-            valueView.locY = valueView.locY - 60;
+            valueView.locY = valueView.locY - 125;
+            valueView.locX = valueView.locX - 60;
             
             var distanceView = View.findDrawableById("distance");
-            distanceView.locY = distanceView.locY -30;
+            distanceView.locY = distanceView.locY - 125;
+            distanceView.locX = distanceView.locX + 60;
             
             var ascentView = View.findDrawableById("ascent");
-            ascentView.locY = ascentView.locY + 0;
+            ascentView.locY = ascentView.locY - 45;
+            ascentView.locX = ascentView.locX - 60;
             
             var descentView = View.findDrawableById("descent");
-            descentView.locY = descentView.locY + 30;
+            descentView.locY = descentView.locY - 45;
+            descentView.locX = descentView.locX + 60;
+
+            var hrView = View.findDrawableById("bpm");
+            hrView.locY = hrView.locY + 25;
+            hrView.locX = hrView.locX + 0;
             
             var wattView = View.findDrawableById("watt");
-            wattView.locY = wattView.locY + 80;
+            wattView.locY = wattView.locY + 95;
+            wattView.locX = wattView.locX + 0;
         }
     }
 
@@ -116,6 +125,14 @@ class powerMView extends WatchUi.DataField {
                 sValue = info.currentSpeed as Number * 3.6;     // from mps to kmh
             } else {
                 sValue = 0.00f;
+            }
+        }
+
+        if(info has :currentHeartRate){
+            if(info.currentHeartRate != null){
+                hValue = info.currentHeartRate as Number;     // bpm
+            } else {
+                hValue = 0.00f;
             }
         }
 
@@ -161,9 +178,9 @@ class powerMView extends WatchUi.DataField {
                     powerRise = weightOverall * g * speedVertical;
 
                     powerTotal = powerWind + powerResistance + powerRise;
-                    Sys.println("DEBUG: onUpdate() SPEED: " + sValue);
-                    Sys.println("DEBUG: onUpdate() WATT : " + powerTotal);
-                    Sys.println("DEBUG: onUpdate() RISE :           " + calcAscent);
+                    //Sys.println("DEBUG: onUpdate() SPEED: " + sValue);
+                    //Sys.println("DEBUG: onUpdate() WATT : " + powerTotal);
+                    //Sys.println("DEBUG: onUpdate() RISE : " + calcAscent);
                     wValue = powerTotal;
 
             } else {
@@ -185,7 +202,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             value.setColor(Graphics.COLOR_BLACK);
         }
-        value.setText(sValue.format("%.2f") + " km/h");
+        value.setText("SPEED" + "\n" + sValue.format("%.2f"));
 
         var distance = View.findDrawableById("distance") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -193,7 +210,15 @@ class powerMView extends WatchUi.DataField {
         } else {
             distance.setColor(Graphics.COLOR_BLACK);
         }
-        distance.setText(mValue.format("%.2f") + " km");
+        distance.setText("KM" + "\n" + mValue.format("%.2f"));
+
+        var hr = View.findDrawableById("bpm") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            hr.setColor(Graphics.COLOR_WHITE);
+        } else {
+            hr.setColor(Graphics.COLOR_BLACK);
+        }
+        hr.setText("HRM" + "\n" + hValue.format("%i"));
 
         var ascent = View.findDrawableById("ascent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -201,7 +226,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             ascent.setColor(Graphics.COLOR_BLACK);
         }
-        ascent.setText(aValue.format("%.2f") + " m");
+        ascent.setText("UP" + "\n" + aValue.format("%.2f"));
 
         var descent = View.findDrawableById("descent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -209,7 +234,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             descent.setColor(Graphics.COLOR_BLACK);
         }
-        descent.setText(dValue.format("%.2f") + " m");
+        descent.setText("DOWN" + "\n" + dValue.format("%.2f"));
 
         var watt = View.findDrawableById("watt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -217,13 +242,14 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
-        watt.setText(wValue.format("%.2f") + " Watt");
+        watt.setText("WATT" + "\n" + wValue.format("%.2f"));
 
         speedRounded = sValue.toNumber();
         distanceRounded = mValue.toNumber();
         currentWatt = wValue.toNumber();
         ascent = aValue.toNumber();
         descent = dValue.toNumber();
+        hr = hValue.toNumber();
 
         var checkMValue = mValue.toDouble();
         var checkNewDistance = newDistance.toDouble();
@@ -247,16 +273,16 @@ class powerMView extends WatchUi.DataField {
                     if(aValue.toDouble() > 0.00000001){
                         var currentAscent = aValue.toDouble();
                         calcAscent = currentAscent - getAscentNowA; 
-                        Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
+                        //Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
                         nowAscent = false;
                     } else if (dValue.toDouble() < 0.000000) {
                         var currentAscent = dValue.toDouble();    // convert Descent to negativ value 
                         calcAscent = currentAscent - getAscentNowD; 
-                        Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
+                        //Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
                         nowAscent = false;
                     } else {
                         //calcAscent = 0.000000;
-                        Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
+                        //Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
                     }
                     count = 0;
                 }
