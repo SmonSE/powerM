@@ -148,7 +148,6 @@ class powerMView extends WatchUi.DataField {
         // Watt
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
-
                     //rise = drop / (Math.sqrt(distance * distance - drop * drop)) * 100;
                     rise = calcAscent / (Math.sqrt(20 * 20 - calcAscent * calcAscent)) * 100;
                     speedMS = sValue / 3.6;   // Speed in m per sec
@@ -156,16 +155,15 @@ class powerMView extends WatchUi.DataField {
                     riseDec = rise / 100;
                     speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
-                    powerAir = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
-                    powerRoll = weightOverall * g * rollingDrag * speedMS;
+                    powerWind = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
+                    powerResistance = weightOverall * g * rollingDrag * speedMS;
                     powerRise = weightOverall * g * speedVertical;
 
-                    powerTotal = powerAir + powerRoll + powerRise;
+                    powerTotal = powerWind + powerResistance + powerRise;
                     Sys.println("DEBUG: onUpdate() SPEED: " + sValue);
                     Sys.println("DEBUG: onUpdate() WATT : " + powerTotal);
                     Sys.println("DEBUG: onUpdate() RISE :           " + calcAscent);
                     wValue = powerTotal;
-
 
             } else {
                 wValue = 0.00f;
@@ -234,23 +232,30 @@ class powerMView extends WatchUi.DataField {
         if (checkMValue >= checkNewDistance) {
             if (nowAscent == false) {
                 getAscentNow = aValue.toDouble();
-                //Sys.println("DEBUG: onUpdate() getAscentNow: " + getAscentNow);
                 nowAscent = true;
             }
+
             newDistance = newDistance + 0.01;
-            //Sys.println("DEBUG: onUpdate() newDistance2: " + newDistance);
             count = count + 1;
-            //Sys.println("DEBUG: onUpdate() count: " + count);
+            dValue *= -1;                           // convert Descent to negativ value 
+            
             if (count == 2) {
                 if(actInfo has :totalAscent){
-                    if(aValue != null){
+                    if(aValue > 0.00000001){
                         var currentAscent = aValue.toDouble();
                         calcAscent = currentAscent - getAscentNow; 
-                        //Sys.println("DEBUG: onUpdate() calcAscent2: " + calcAscent);
+                        //Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
+                        nowAscent = false;
+                    }
+                    // Do not know if this is also at PowerMeter
+                    if (dValue < 0.000000) {
+                        var currentAscent = dValue.toDouble();
+                        calcAscent = currentAscent - getAscentNow; 
+                        //Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
                         nowAscent = false;
                     } else {
-                        calcAscent = 0.00f;
-                        //Sys.println("DEBUG: onUpdate() calcAscent: " + calcAscent);
+                        calcAscent = 0.000000;
+                        //Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
                     }
                     count = 0;
                 }
@@ -259,12 +264,8 @@ class powerMView extends WatchUi.DataField {
             //Sys.println("DEBUG: onUpdate() else");
         }
 
-
         // Call parent's onUpdate(dc) to redraw the layout
         View.onUpdate(dc);
-
-        // ----------------------------------------------------------- //
     }
 
 }
-
