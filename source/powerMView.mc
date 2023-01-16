@@ -100,9 +100,8 @@ class powerMView extends WatchUi.DataField {
             descentView.locY = descentView.locY + 30;
             
             var wattView = View.findDrawableById("watt");
-            wattView.locY = wattView.locY + 60;
+            wattView.locY = wattView.locY + 80;
         }
-
     }
 
     // The given info object contains all the current workout information.
@@ -151,7 +150,7 @@ class powerMView extends WatchUi.DataField {
             if(info.currentSpeed != null){
 
                     //rise = drop / (Math.sqrt(distance * distance - drop * drop)) * 100;
-                    rise = calcAscent / (Math.sqrt(100 * 100 - calcAscent * calcAscent)) * 100;
+                    rise = calcAscent / (Math.sqrt(20 * 20 - calcAscent * calcAscent)) * 100;
                     speedMS = sValue / 3.6;   // Speed in m per sec
                     weightOverall = weightRider + bikeEquipWeight;
                     riseDec = rise / 100;
@@ -162,7 +161,9 @@ class powerMView extends WatchUi.DataField {
                     powerRise = weightOverall * g * speedVertical;
 
                     powerTotal = powerAir + powerRoll + powerRise;
-                    //Sys.println("DEBUG: onUpdate() powerTotal: " + powerTotal);
+                    Sys.println("DEBUG: onUpdate() SPEED: " + sValue);
+                    Sys.println("DEBUG: onUpdate() WATT : " + powerTotal);
+                    Sys.println("DEBUG: onUpdate() RISE :           " + calcAscent);
                     wValue = powerTotal;
 
 
@@ -217,7 +218,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
-        watt.setText(wValue.format("%.2f") + " watt");
+        watt.setText(wValue.format("%.2f") + " Watt");
 
         speedRounded = sValue.toNumber();
         distanceRounded = mValue.toNumber();
@@ -228,7 +229,7 @@ class powerMView extends WatchUi.DataField {
         var checkMValue = mValue.toDouble();
         var checkNewDistance = newDistance.toDouble();
 
-        Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
+        //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
 
         if (checkMValue >= checkNewDistance) {
             if (nowAscent == false) {
@@ -239,13 +240,13 @@ class powerMView extends WatchUi.DataField {
             newDistance = newDistance + 0.01;
             //Sys.println("DEBUG: onUpdate() newDistance2: " + newDistance);
             count = count + 1;
-            Sys.println("DEBUG: onUpdate() count: " + count);
-            if (count == 10) {
+            //Sys.println("DEBUG: onUpdate() count: " + count);
+            if (count == 2) {
                 if(actInfo has :totalAscent){
                     if(aValue != null){
                         var currentAscent = aValue.toDouble();
                         calcAscent = currentAscent - getAscentNow; 
-                        Sys.println("DEBUG: onUpdate() calcAscent: " + calcAscent);
+                        //Sys.println("DEBUG: onUpdate() calcAscent2: " + calcAscent);
                         nowAscent = false;
                     } else {
                         calcAscent = 0.00f;
