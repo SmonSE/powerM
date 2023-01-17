@@ -16,6 +16,8 @@ class powerMView extends WatchUi.DataField {
     hidden var dValue as Numeric;   // Descent
     hidden var hValue as Numeric;   // Heartrate
 
+    var startWatt = false;
+
     var count = 0;                  // Time Counter
     var drop = 0;                   // Höhenunterschied 
     var rise = 0;                   // Aufstieg / Anstieg
@@ -242,8 +244,11 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
-        watt.setText("WATT" + "\n" + wValue.format("%.2f"));
-
+        if (startWatt == false) {
+            watt.setText("WATT" + "\n" + wValue.format("%i"));
+            startWatt = true;
+        }
+        
         speedRounded = sValue.toNumber();
         distanceRounded = mValue.toNumber();
         currentWatt = wValue.toNumber();
@@ -266,26 +271,32 @@ class powerMView extends WatchUi.DataField {
 
             newDistance = newDistance + 0.01;
             count = count + 1;
-            dValue *= -1;                           // convert Descent to negativ value 
-            
+            dValue *= -1;                                           // convert Descent to negativ value 
+
             if (count == 2) {
                 if(actInfo has :totalAscent){
-                    if(aValue.toDouble() > 0.00000001){
+                    if(aValue.toDouble() > 0.00000000){
                         var currentAscent = aValue.toDouble();
                         calcAscent = currentAscent - getAscentNowA; 
-                        //Sys.println("DEBUG: onUpdate() ascent: " + calcAscent);
+                        Sys.println("DEBUG: onUpdate() ASCENT: " + calcAscent);
                         nowAscent = false;
-                    } else if (dValue.toDouble() < 0.000000) {
-                        var currentAscent = dValue.toDouble();    // convert Descent to negativ value 
-                        calcAscent = currentAscent - getAscentNowD; 
-                        //Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
+                    } 
+                    /*
+                    else if (dValue.toDouble() < 0.000000) {
+                        var currentAscent = dValue.toDouble();
+                        calcAscent = currentAscent + getAscentNowD; 
+                        Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
                         nowAscent = false;
-                    } else {
-                        //calcAscent = 0.000000;
-                        //Sys.println("DEBUG: onUpdate() zero: " + calcAscent);
+                    } 
+                    */
+                    else {
+                        calcAscent = 0.000000;
+                        //Sys.println("DEBUG: onUpdate() ZERO  : " + calcAscent);
                     }
                     count = 0;
                 }
+                // Update Watt not so often 
+                watt.setText("WATT" + "\n" + wValue.format("%i"));
             }
         } else {
             //Sys.println("DEBUG: onUpdate() else");
