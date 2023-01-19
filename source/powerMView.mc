@@ -83,28 +83,52 @@ class powerMView extends WatchUi.DataField {
         } else {
             View.setLayout(Rez.Layouts.MainLayout(dc));
 
-            var valueView = View.findDrawableById("speed");
-            valueView.locY = valueView.locY - 125;
-            valueView.locX = valueView.locX - 60;
+            var lSpeedView = View.findDrawableById("labelSpeed");
+            lSpeedView.locY = lSpeedView.locY - 120;
+            lSpeedView.locX = lSpeedView.locX - 60;
+
+            var speedView = View.findDrawableById("speed");
+            speedView.locY = speedView.locY - 90;
+            speedView.locX = speedView.locX - 60;
+
+            var lDistanceView = View.findDrawableById("labelDistance");
+            lDistanceView.locY = lDistanceView.locY - 120;
+            lDistanceView.locX = lDistanceView.locX + 60;
             
             var distanceView = View.findDrawableById("distance");
-            distanceView.locY = distanceView.locY - 125;
+            distanceView.locY = distanceView.locY - 90;
             distanceView.locX = distanceView.locX + 60;
+
+            var lAscentView = View.findDrawableById("labelAscent");
+            lAscentView.locY = lAscentView.locY - 40;
+            lAscentView.locX = lAscentView.locX - 60;
             
             var ascentView = View.findDrawableById("ascent");
-            ascentView.locY = ascentView.locY - 45;
+            ascentView.locY = ascentView.locY - 10;
             ascentView.locX = ascentView.locX - 60;
+
+            var lAPressureView = View.findDrawableById("labelAPressure");
+            lAPressureView.locY = lAPressureView.locY - 40;
+            lAPressureView.locX = lAPressureView.locX + 60;
             
             var aPressureView = View.findDrawableById("aPressure");
-            aPressureView.locY = aPressureView.locY - 45;
+            aPressureView.locY = aPressureView.locY - 10;
             aPressureView.locX = aPressureView.locX + 60;
 
+            var lHrView = View.findDrawableById("labelBpm");
+            lHrView.locY = lHrView.locY + 30;
+            lHrView.locX = lHrView.locX + 0;
+
             var hrView = View.findDrawableById("bpm");
-            hrView.locY = hrView.locY + 25;
+            hrView.locY = hrView.locY + 60;
             hrView.locX = hrView.locX + 0;
+
+            var lWattView = View.findDrawableById("labelWatt");
+            lWattView.locY = lWattView.locY + 90;
+            lWattView.locX = lWattView.locX + 0;
             
             var wattView = View.findDrawableById("watt");
-            wattView.locY = wattView.locY + 95;
+            wattView.locY = wattView.locY + 120;
             wattView.locX = wattView.locX + 0;
         }
     }
@@ -203,13 +227,29 @@ class powerMView extends WatchUi.DataField {
         (View.findDrawableById("Background") as Text).setColor(getBackgroundColor());
 
         // Set the foreground color and value
-        var value = View.findDrawableById("speed") as Text;
+        var labelSpeed = View.findDrawableById("labelSpeed") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
-            value.setColor(Graphics.COLOR_WHITE);
+            labelSpeed.setColor(Graphics.COLOR_WHITE);
         } else {
-            value.setColor(Graphics.COLOR_BLACK);
+            labelSpeed.setColor(Graphics.COLOR_BLACK);
         }
-        value.setText("SPEED" + "\n" + sValue.format("%.2f"));
+        labelSpeed.setText("SPEED");
+
+        var speed = View.findDrawableById("speed") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            speed.setColor(Graphics.COLOR_WHITE);
+        } else {
+            speed.setColor(Graphics.COLOR_BLACK);
+        }
+        speed.setText(sValue.format("%.2f"));
+
+        var labelDistance = View.findDrawableById("labelDistance") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            labelDistance.setColor(Graphics.COLOR_WHITE);
+        } else {
+            labelDistance.setColor(Graphics.COLOR_BLACK);
+        }
+        labelDistance.setText("KM");
 
         var distance = View.findDrawableById("distance") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -217,7 +257,15 @@ class powerMView extends WatchUi.DataField {
         } else {
             distance.setColor(Graphics.COLOR_BLACK);
         }
-        distance.setText("KM" + "\n" + mValue.format("%.2f"));
+        distance.setText(mValue.format("%.2f"));
+
+        var labelHr = View.findDrawableById("labelBpm") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            labelHr.setColor(Graphics.COLOR_WHITE);
+        } else {
+            labelHr.setColor(Graphics.COLOR_BLACK);
+        }
+        labelHr.setText("HRM");
 
         var hr = View.findDrawableById("bpm") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -225,7 +273,15 @@ class powerMView extends WatchUi.DataField {
         } else {
             hr.setColor(Graphics.COLOR_BLACK);
         }
-        hr.setText("HRM" + "\n" + hValue.format("%i"));
+        hr.setText(hValue.format("%i"));
+
+        var labelAscent = View.findDrawableById("labelAscent") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            labelAscent.setColor(Graphics.COLOR_WHITE);
+        } else {
+            labelAscent.setColor(Graphics.COLOR_BLACK);
+        }
+        labelAscent.setText("UP");
 
         var ascent = View.findDrawableById("ascent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -233,7 +289,15 @@ class powerMView extends WatchUi.DataField {
         } else {
             ascent.setColor(Graphics.COLOR_BLACK);
         }
-        ascent.setText("UP" + "\n" + aValue.format("%.2f"));
+        ascent.setText(aValue.format("%.2f"));
+
+        var labelAPressure = View.findDrawableById("labelAPressure") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            labelAPressure.setColor(Graphics.COLOR_WHITE);
+        } else {
+            labelAPressure.setColor(Graphics.COLOR_BLACK);
+        }
+        labelAPressure.setText("PA/m");
 
         var aPressure = View.findDrawableById("aPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -241,7 +305,15 @@ class powerMView extends WatchUi.DataField {
         } else {
             aPressure.setColor(Graphics.COLOR_BLACK);
         }
-        aPressure.setText("PA/m" + "\n" + dValue.format("%.2f"));
+        aPressure.setText(dValue.format("%.2f"));
+
+        var labelWatt = View.findDrawableById("labelWatt") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            labelWatt.setColor(Graphics.COLOR_WHITE);
+        } else {
+            labelWatt.setColor(Graphics.COLOR_BLACK);
+        }
+        labelWatt.setText("WATT");
 
         var watt = View.findDrawableById("watt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -252,16 +324,9 @@ class powerMView extends WatchUi.DataField {
 
         // Watt will be updated every 10m -> if to avoid empty data field
         if (startWatt == false) {
-            watt.setText("WATT" + "\n" + wValue.format("%i"));
+            watt.setText(wValue.format("%i"));
             startWatt = true;
         } 
-        
-        //speedRounded = sValue.toNumber();
-        //distanceRounded = mValue.toNumber();
-        //currentWatt = wValue.toNumber();
-        //ascent = dValue.toNumber();
-        //aPressure = dValue.toNumber();
-        //hr = hValue.toNumber();
 
         var checkMValue = mValue.toDouble();
         var checkNewDistance = newDistance.toDouble();
@@ -273,7 +338,7 @@ class powerMView extends WatchUi.DataField {
 
             if (count == 1) {
                 if (wValue.toFloat() > 0) {
-                    watt.setText("WATT" + "\n" + wValue.format("%i"));
+                    watt.setText(wValue.format("%i"));
                 }
                 count = 0;
             }  
