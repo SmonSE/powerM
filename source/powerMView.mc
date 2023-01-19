@@ -17,6 +17,11 @@ class powerMView extends WatchUi.DataField {
     hidden var hValue as Numeric;   // Heartrate
 
     var startWatt = false;
+    var start = false;
+
+    var startPressure = 0;
+    var paMeter = 0;
+    var calcPressure = 0;
 
     var count = 0;                  // Time Counter
     var drop = 0;                   // Höhenunterschied 
@@ -156,10 +161,24 @@ class powerMView extends WatchUi.DataField {
             }
         }
 
-        // Descent
-        if(info has :totalDescent){
-            if(info.totalDescent != null){
-                dValue = info.totalDescent as Number; 
+        // Descent / Change to Barometer
+        if(info has :ambientPressure){
+            if(info.ambientPressure != null){
+                if (start == false) {
+                    startPressure = info.ambientPressure as Number; 
+                    startPressure = startPressure.toFloat() * 0.010197162129779;    // convert PA to cm 
+                    start = true;
+                }   
+                
+                dValue = info.ambientPressure as Number;                            
+                dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
+
+                calcPressure = startPressure - dValue;
+                paMeter = calcPressure * 10;                                        // value 0.10 = 1Meter
+
+                startPressure = dValue;                                             // 
+                dValue = paMeter;
+
             } else {
                 dValue = 0.00f;
             }
@@ -168,23 +187,21 @@ class powerMView extends WatchUi.DataField {
         // Watt
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
-                    //rise = drop / (Math.sqrt(distance * distance - drop * drop)) * 100;
-                    rise = calcAscent / (Math.sqrt(20 * 20 - calcAscent * calcAscent)) * 100;
-                    speedMS = sValue / 3.6;   // Speed in m per sec
-                    weightOverall = weightRider + bikeEquipWeight;
-                    riseDec = rise / 100;
-                    speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
+                rise = paMeter / (Math.sqrt(10 * 10 - paMeter * paMeter)) * 100;
+                speedMS = sValue / 3.6;                                             // Speed in m per sec
+                weightOverall = weightRider + bikeEquipWeight;
+                riseDec = rise / 100;
+                speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
-                    powerWind = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
-                    powerResistance = weightOverall * g * rollingDrag * speedMS;
-                    powerRise = weightOverall * g * speedVertical;
+                powerWind = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
+                powerResistance = weightOverall * g * rollingDrag * speedMS;
+                powerRise = weightOverall * g * speedVertical;
 
-                    powerTotal = powerWind + powerResistance + powerRise;
-                    //Sys.println("DEBUG: onUpdate() SPEED: " + sValue);
-                    //Sys.println("DEBUG: onUpdate() WATT : " + powerTotal);
-                    //Sys.println("DEBUG: onUpdate() RISE : " + calcAscent);
-                    wValue = powerTotal;
-
+                powerTotal = powerWind + powerResistance + powerRise;
+                //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
+                //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
+                //Sys.println("DEBUG: onUpdate() PRESSURE: " + paMeter);
+                wValue = powerTotal;
             } else {
                 wValue = 0.00f;
             }
@@ -236,7 +253,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             descent.setColor(Graphics.COLOR_BLACK);
         }
-        descent.setText("DOWN" + "\n" + dValue.format("%.2f"));
+        descent.setText("PA/m" + "\n" + dValue.format("%.2f"));
 
         var watt = View.findDrawableById("watt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -244,60 +261,33 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
+        // Watt will be updated every 10m -> if to avoid empty data field
         if (startWatt == false) {
             watt.setText("WATT" + "\n" + wValue.format("%i"));
             startWatt = true;
-        }
+        } 
         
         speedRounded = sValue.toNumber();
         distanceRounded = mValue.toNumber();
         currentWatt = wValue.toNumber();
-        ascent = aValue.toNumber();
+        ascent = dValue.toNumber();
         descent = dValue.toNumber();
         hr = hValue.toNumber();
 
         var checkMValue = mValue.toDouble();
         var checkNewDistance = newDistance.toDouble();
-
         //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
 
         if (checkMValue >= checkNewDistance) {
-            if (nowAscent == false) {
-                getAscentNowA = aValue.toDouble();
-                getAscentNowD = dValue.toDouble();
-                getAscentNowD *= -1;
-                nowAscent = true;
-            }
-
             newDistance = newDistance + 0.01;
             count = count + 1;
-            dValue *= -1;                                           // convert Descent to negativ value 
 
-            if (count == 2) {
-                if(actInfo has :totalAscent){
-                    if(aValue.toDouble() > 0.00000000){
-                        var currentAscent = aValue.toDouble();
-                        calcAscent = currentAscent - getAscentNowA; 
-                        Sys.println("DEBUG: onUpdate() ASCENT: " + calcAscent);
-                        nowAscent = false;
-                    } 
-                    /*
-                    else if (dValue.toDouble() < 0.000000) {
-                        var currentAscent = dValue.toDouble();
-                        calcAscent = currentAscent + getAscentNowD; 
-                        Sys.println("DEBUG: onUpdate() descent: " + calcAscent);
-                        nowAscent = false;
-                    } 
-                    */
-                    else {
-                        calcAscent = 0.000000;
-                        //Sys.println("DEBUG: onUpdate() ZERO  : " + calcAscent);
-                    }
-                    count = 0;
+            if (count == 1) {
+                if (wValue.toFloat() > 0) {
+                    watt.setText("WATT" + "\n" + wValue.format("%i"));
                 }
-                // Update Watt not so often 
-                watt.setText("WATT" + "\n" + wValue.format("%i"));
-            }
+                count = 0;
+            }  
         } else {
             //Sys.println("DEBUG: onUpdate() else");
         }
