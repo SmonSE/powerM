@@ -9,19 +9,18 @@ using Toybox.ActivityMonitor;
 
 class powerMView extends WatchUi.DataField {
 
+    //getActivityInfo
+    var actInfo = Activity.getActivityInfo();
+
     hidden var sValue as Numeric;   // Speed
     hidden var mValue as Numeric;   // Distance
     hidden var wValue as Numeric;   // Watt
     hidden var aValue as Numeric;   // Ascent
-    hidden var dValue as Numeric;   // Descent
+    hidden var dValue as Numeric;   // Ambient Pressure
     hidden var hValue as Numeric;   // Heartrate
 
     var startWatt = false;
     var start = false;
-
-    var startPressure = 0;
-    var paMeter = 0;
-    var calcPressure = 0;
 
     var count = 0;                  // Time Counter
     var drop = 0;                   // Höhenunterschied 
@@ -29,14 +28,18 @@ class powerMView extends WatchUi.DataField {
     var speedMS = 0;                // Geschwindigkeit meter pro sekunde
     var weightOverall = 0;          // Gewicht Fahrer + Bike + Equipment
     var riseDec = 0;                // Aufstieg / 100 
-    var speedVertical = 0;          // 
+    var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 85;
-    var bikeEquipWeight = 15;
+    var weightRider = 85;           // Gewicht Fahrer (daten aus Garmin Profil laden)
+    var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
     var drag = 0.28;                // Cw*a
     var airDensity = 1.20;          // Luftdichte
     var rollingDrag = 0.005;        // Rollreibungsgrad 0.005 Rennrad : MTB ??
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
+
+    var startPressure = 0;
+    var paMeter = 0;
+    var calcPressure = 0;
 
     var powerTotal = 0;
     var powerWind = 0;
@@ -44,21 +47,6 @@ class powerMView extends WatchUi.DataField {
     var powerRise = 0;
 
     var newDistance = 0.00;
-    var newAscent = 0;
-    var calcAscent = 0;
-
-    var nowAscent = false;
-    var getAscentNowA = 0;
-    var getAscentNowD = 0;
-
-    //getActivityInfo
-    var actInfo = Activity.getActivityInfo();
-    var speedRounded;
-    var distanceRounded;
-    var currentWatt;
-    var ascent;
-    var descent;
-    var hr;
 
     function initialize() {
         DataField.initialize();
@@ -107,9 +95,9 @@ class powerMView extends WatchUi.DataField {
             ascentView.locY = ascentView.locY - 45;
             ascentView.locX = ascentView.locX - 60;
             
-            var descentView = View.findDrawableById("descent");
-            descentView.locY = descentView.locY - 45;
-            descentView.locX = descentView.locX + 60;
+            var aPressureView = View.findDrawableById("aPressure");
+            aPressureView.locY = aPressureView.locY - 45;
+            aPressureView.locX = aPressureView.locX + 60;
 
             var hrView = View.findDrawableById("bpm");
             hrView.locY = hrView.locY + 25;
@@ -161,7 +149,7 @@ class powerMView extends WatchUi.DataField {
             }
         }
 
-        // Descent / Change to Barometer
+        // Ambient Pressure / Change to Barometer
         if(info has :ambientPressure){
             if(info.ambientPressure != null){
                 if (start == false) {
@@ -247,13 +235,13 @@ class powerMView extends WatchUi.DataField {
         }
         ascent.setText("UP" + "\n" + aValue.format("%.2f"));
 
-        var descent = View.findDrawableById("descent") as Text;
+        var aPressure = View.findDrawableById("aPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
-            descent.setColor(Graphics.COLOR_WHITE);
+            aPressure.setColor(Graphics.COLOR_WHITE);
         } else {
-            descent.setColor(Graphics.COLOR_BLACK);
+            aPressure.setColor(Graphics.COLOR_BLACK);
         }
-        descent.setText("PA/m" + "\n" + dValue.format("%.2f"));
+        aPressure.setText("PA/m" + "\n" + dValue.format("%.2f"));
 
         var watt = View.findDrawableById("watt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -261,18 +249,19 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
+
         // Watt will be updated every 10m -> if to avoid empty data field
         if (startWatt == false) {
             watt.setText("WATT" + "\n" + wValue.format("%i"));
             startWatt = true;
         } 
         
-        speedRounded = sValue.toNumber();
-        distanceRounded = mValue.toNumber();
-        currentWatt = wValue.toNumber();
-        ascent = dValue.toNumber();
-        descent = dValue.toNumber();
-        hr = hValue.toNumber();
+        //speedRounded = sValue.toNumber();
+        //distanceRounded = mValue.toNumber();
+        //currentWatt = wValue.toNumber();
+        //ascent = dValue.toNumber();
+        //aPressure = dValue.toNumber();
+        //hr = hValue.toNumber();
 
         var checkMValue = mValue.toDouble();
         var checkNewDistance = newDistance.toDouble();
