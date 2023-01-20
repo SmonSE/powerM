@@ -21,8 +21,8 @@ class powerMView extends WatchUi.DataField {
     hidden var dValue as Numeric;   // Ambient Pressure
     hidden var hValue as Numeric;   // Heartrate
 
-    var startWatt = false;
-    var start = false;
+    var startWatt = false;          // Set Watt value at the beginning to avoid empty data field
+    var start = false;              // Set StartPresure once at the beginning
 
     var count = 0;                  // Time Counter
     var drop = 0;                   // Höhenunterschied 
@@ -35,7 +35,7 @@ class powerMView extends WatchUi.DataField {
     var weightRider = 0;           // Gewicht Fahrer (daten aus Garmin Profil laden)
     var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
     var drag = 0.28;                // Cw*a
-    var airDensity = 1.20;          // Luftdichte
+    var airDensity = 1.20;          // Luftdichte -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
     var rollingDrag = 0.005;        // Rollreibungsgrad 0.005 Rennrad : MTB ??
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
@@ -216,7 +216,7 @@ class powerMView extends WatchUi.DataField {
                 //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
                 //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
                 //Sys.println("DEBUG: onUpdate() PRESSURE: " + paMeter);
-                //Sys.println("DEBUG: onUpdate() WEIGHT: " + weightRider);
+                //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
             } else {
                 wValue = 0.00f;
