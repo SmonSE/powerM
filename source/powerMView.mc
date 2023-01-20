@@ -6,11 +6,13 @@ import Toybox.WatchUi;
 using Toybox.System as Sys;
 using Toybox.Application as App;
 using Toybox.ActivityMonitor;
+using Toybox.UserProfile;
 
 class powerMView extends WatchUi.DataField {
 
     //getActivityInfo
     var actInfo = Activity.getActivityInfo();
+    var userProfile = UserProfile.getProfile();
 
     hidden var sValue as Numeric;   // Speed
     hidden var mValue as Numeric;   // Distance
@@ -30,7 +32,7 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 85;           // Gewicht Fahrer (daten aus Garmin Profil laden)
+    var weightRider = 0;           // Gewicht Fahrer (daten aus Garmin Profil laden)
     var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
     var drag = 0.28;                // Cw*a
     var airDensity = 1.20;          // Luftdichte
@@ -50,6 +52,7 @@ class powerMView extends WatchUi.DataField {
 
     function initialize() {
         DataField.initialize();
+        weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
         sValue = 0.00f;
         mValue = 0.00f;
         wValue = 0.00f;
@@ -213,6 +216,7 @@ class powerMView extends WatchUi.DataField {
                 //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
                 //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
                 //Sys.println("DEBUG: onUpdate() PRESSURE: " + paMeter);
+                //Sys.println("DEBUG: onUpdate() WEIGHT: " + weightRider);
                 wValue = powerTotal;
             } else {
                 wValue = 0.00f;
