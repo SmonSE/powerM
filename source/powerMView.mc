@@ -1,3 +1,5 @@
+// Luftdichte berechnen: https://studyflix.de/chemie/luftdichte-3009
+
 import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -32,7 +34,7 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 0;           // Gewicht Fahrer (daten aus Garmin Profil laden)
+    var weightRider = 0;            // Gewicht Fahrer (daten aus Garmin Profil laden)
     var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
     var drag = 0.28;                // Cw*a
     var airDensity = 1.20;          // Luftdichte -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
