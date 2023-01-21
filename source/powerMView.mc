@@ -36,9 +36,9 @@ class powerMView extends WatchUi.DataField {
 
     var weightRider = 0;            // Gewicht Fahrer (daten aus Garmin Profil laden)
     var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
-    var drag = 0.28;                // Cw*a
+    var drag = 0.525;               // Luftreibungzahl Cw*A [m2] / MTB: 0.525, Road: 0.28, 
     var airDensity = 1.20;          // Luftdichte -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-    var rollingDrag = 0.005;        // Rollreibungsgrad 0.005 Rennrad : MTB ??
+    var rollingDrag = 0.009;        // Rollreibungszahl cr des Reifens / Race: 0.006, Tour: 0.008, Enduro: 0.009
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
