@@ -1,6 +1,7 @@
 # powerM
 
-TRAIN BY WATTS
+##TRAIN BY WATTS
+
 The trend in cycling is that the current performance is measured in watts/kg. This allows a relatively accurate evaluation, 
 with which training progress can be measured. Watt measuring systems offer clear advantages compared to a training analysis via the heart rate, 
 but are quite expensive and therefore mainly found in amateur and professional areas.
