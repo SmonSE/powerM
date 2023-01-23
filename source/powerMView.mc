@@ -38,11 +38,11 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 70;            // Gewicht Fahrer (daten aus Garmin Profil laden)
-    var bikeEquipWeight = 10;       // Gewicht Bike + Equipment
-    var drag = 0.28;               // Luftreibungzahl Cw*A [m2] / MTB: 0.525, Road: 0.28, 
-    var airDensity = 1.20;          // Luftdichte -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-    var rollingDrag = 0.006;        // Rollreibungszahl cr des Reifens / Race: 0.006, Tour: 0.008, Enduro: 0.009
+    var weightRider = 66;           // Gewicht Fahrer (daten aus Garmin Profil laden)
+    var bikeEquipWeight = 0;       // Gewicht Bike + Equipment
+    var drag = 0.25;                // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+    var airDensity = 1.10;          // Luftdichte: 1.20 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
+    var rollingDrag = 0.005;        // Rollreibungszahl cr des Reifens / Rollentrainer: 0.005, Race: 0.006, Tour: 0.008, Enduro: 0.009
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
@@ -61,7 +61,7 @@ class powerMView extends WatchUi.DataField {
 
     function initialize() {
         DataField.initialize();
-        weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
+        //weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
         sValue  = 0.00f;
         mValue  = 0.00f;
         wValue  = 0.00f;
