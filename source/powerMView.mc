@@ -38,11 +38,11 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 66;           // Gewicht Fahrer (daten aus Garmin Profil laden)
-    var bikeEquipWeight = 0;       // Gewicht Bike + Equipment
-    var drag = 0.25;                // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
-    var airDensity = 1.10;          // Luftdichte: 1.20 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-    var rollingDrag = 0.005;        // Rollreibungszahl cr des Reifens / Rollentrainer: 0.005, Race: 0.006, Tour: 0.008, Enduro: 0.009
+    var weightRider = 80;           // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
+    var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
+    var drag = 0.3;                // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+    var airDensity = 1.205;          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
+    var rollingDrag = 0.006;        // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
@@ -61,7 +61,7 @@ class powerMView extends WatchUi.DataField {
 
     function initialize() {
         DataField.initialize();
-        //weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
+        weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
         sValue  = 0.00f;
         mValue  = 0.00f;
         wValue  = 0.00f;
@@ -240,16 +240,28 @@ class powerMView extends WatchUi.DataField {
         // Watt
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
+                // Pa = Luftwiderstand
+                // Pr = Rollwiderstand
+                // Pc = Steigungswiderstand
                 rise = paMeter / (Math.sqrt(10 * 10 - paMeter * paMeter)) * 100;
                 speedMS = sValue / 3.6;                                             // Speed in m per sec
                 weightOverall = weightRider + bikeEquipWeight;
                 riseDec = rise / 100;
                 speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
+                // Pa = p * 0,5 * cdA * V * (v-vw)2
+                // (ρ = Luftdichte 1,205 (kg/m3); cdA = 0,3 m2; v = 40km/h; vw = Gegenwind = 0 km/h)
                 powerWind = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
+                // Pr = c1 * m * g * v 
+                // (c1 = Rollwiderstandsfaktor; m = Masse (Systemgewicht); g 0 ),81 m/s2; v = 40 km/h)
+                // Pr = 0,004 * 81,5 * 9,81 * 40 / 3,6 = 36 Watt (aufgerundet)
                 powerResistance = weightOverall * g * rollingDrag * speedMS;
+                // Pc = (i/100) * M * g * v
+                // (i = 3,9%; m = 81,5kg, v = 40km/h, g = 9,81 m/s2)
+                // Pc = 3,9/100 * 81,5 * 9,81 * 40/3,6 = 346 Watt (abgerundet)
                 powerRise = weightOverall * g * speedVertical;
 
+                // P = Pa + Pr + Pc
                 powerTotal = powerWind + powerResistance + powerRise;
                 //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
                 //Sys.println("DEBUG: onUpdate() KM      : " + mValue);
@@ -263,11 +275,11 @@ class powerMView extends WatchUi.DataField {
                 powerCount = powerCount +1;
                 powerAverage = powerOverall / powerCount;
                 avValue = powerAverage;
-                Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
+                //Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
 
                 // Watt / KG
                 kgValue = powerAverage / weightRider;
-                Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
+                //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
 
 
             } else {
