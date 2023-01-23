@@ -1,3 +1,4 @@
+// https://ilovecycling.de/training/wattmonster-oder-wie-viel-watt-kann-der-mensch-treten/
 // Luftdichte berechnen: https://studyflix.de/chemie/luftdichte-3009
 
 import Toybox.Activity;
@@ -16,12 +17,15 @@ class powerMView extends WatchUi.DataField {
     var actInfo = Activity.getActivityInfo();
     var userProfile = UserProfile.getProfile();
 
-    hidden var sValue as Numeric;   // Speed
-    hidden var mValue as Numeric;   // Distance
-    hidden var wValue as Numeric;   // Watt
-    hidden var aValue as Numeric;   // Ascent
-    hidden var dValue as Numeric;   // Ambient Pressure
-    hidden var hValue as Numeric;   // Heartrate
+    hidden var sValue  as Numeric;   // Speed
+    hidden var mValue  as Numeric;   // Distance
+    hidden var wValue  as Numeric;   // Watt
+    hidden var aValue  as Numeric;   // Ascent
+    hidden var dValue  as Numeric;   // Ambient Pressure
+    hidden var hValue  as Numeric;   // Heartrate
+    hidden var avValue as Numeric;   // Watt Average
+    hidden var asValue as Numeric;   // Average Speed
+    hidden var kgValue as Numeric;   // Watt / kg
 
     var startWatt = false;          // Set Watt value at the beginning to avoid empty data field
     var start = false;              // Set StartPresure once at the beginning
@@ -34,11 +38,11 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 0;            // Gewicht Fahrer (daten aus Garmin Profil laden)
-    var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
-    var drag = 0.525;               // Luftreibungzahl Cw*A [m2] / MTB: 0.525, Road: 0.28, 
+    var weightRider = 70;            // Gewicht Fahrer (daten aus Garmin Profil laden)
+    var bikeEquipWeight = 10;       // Gewicht Bike + Equipment
+    var drag = 0.28;               // Luftreibungzahl Cw*A [m2] / MTB: 0.525, Road: 0.28, 
     var airDensity = 1.20;          // Luftdichte -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-    var rollingDrag = 0.009;        // Rollreibungszahl cr des Reifens / Race: 0.006, Tour: 0.008, Enduro: 0.009
+    var rollingDrag = 0.006;        // Rollreibungszahl cr des Reifens / Race: 0.006, Tour: 0.008, Enduro: 0.009
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
@@ -46,6 +50,9 @@ class powerMView extends WatchUi.DataField {
     var calcPressure = 0;
 
     var powerTotal = 0;
+    var powerOverall = 0;
+    var powerAverage = 0;
+    var powerCount = 0;
     var powerWind = 0;
     var powerResistance = 0;
     var powerRise = 0;
@@ -55,12 +62,15 @@ class powerMView extends WatchUi.DataField {
     function initialize() {
         DataField.initialize();
         weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
-        sValue = 0.00f;
-        mValue = 0.00f;
-        wValue = 0.00f;
-        aValue = 0.00f;
-        dValue = 0.00f;
-        hValue = 0.00f;
+        sValue  = 0.00f;
+        mValue  = 0.00f;
+        wValue  = 0.00f;
+        aValue  = 0.00f;
+        dValue  = 0.00f;
+        hValue  = 0.00f;
+        avValue = 0.00f;
+        asValue = 0.00f;
+        kgValue = 0.00f;
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -90,51 +100,67 @@ class powerMView extends WatchUi.DataField {
 
             var lSpeedView = View.findDrawableById("labelSpeed");
             lSpeedView.locY = lSpeedView.locY - 120;
-            lSpeedView.locX = lSpeedView.locX - 60;
+            lSpeedView.locX = lSpeedView.locX - 55;
 
             var speedView = View.findDrawableById("speed");
             speedView.locY = speedView.locY - 90;
-            speedView.locX = speedView.locX - 60;
+            speedView.locX = speedView.locX - 55;
 
             var lDistanceView = View.findDrawableById("labelDistance");
             lDistanceView.locY = lDistanceView.locY - 120;
-            lDistanceView.locX = lDistanceView.locX + 60;
+            lDistanceView.locX = lDistanceView.locX + 55;
             
             var distanceView = View.findDrawableById("distance");
             distanceView.locY = distanceView.locY - 90;
-            distanceView.locX = distanceView.locX + 60;
+            distanceView.locX = distanceView.locX + 55;
 
             var lAscentView = View.findDrawableById("labelAscent");
-            lAscentView.locY = lAscentView.locY - 40;
-            lAscentView.locX = lAscentView.locX - 60;
+            lAscentView.locY = lAscentView.locY - 50;
+            lAscentView.locX = lAscentView.locX - 55;
             
             var ascentView = View.findDrawableById("ascent");
-            ascentView.locY = ascentView.locY - 10;
-            ascentView.locX = ascentView.locX - 60;
+            ascentView.locY = ascentView.locY - 20;
+            ascentView.locX = ascentView.locX - 55;
 
             var lAPressureView = View.findDrawableById("labelAPressure");
-            lAPressureView.locY = lAPressureView.locY - 40;
-            lAPressureView.locX = lAPressureView.locX + 60;
+            lAPressureView.locY = lAPressureView.locY - 50;
+            lAPressureView.locX = lAPressureView.locX + 55;
             
             var aPressureView = View.findDrawableById("aPressure");
-            aPressureView.locY = aPressureView.locY - 10;
-            aPressureView.locX = aPressureView.locX + 60;
+            aPressureView.locY = aPressureView.locY - 20;
+            aPressureView.locX = aPressureView.locX + 55;
 
             var lHrView = View.findDrawableById("labelBpm");
-            lHrView.locY = lHrView.locY + 30;
-            lHrView.locX = lHrView.locX + 0;
+            lHrView.locY = lHrView.locY + 20;
+            lHrView.locX = lHrView.locX + 55;
 
             var hrView = View.findDrawableById("bpm");
-            hrView.locY = hrView.locY + 60;
-            hrView.locX = hrView.locX + 0;
+            hrView.locY = hrView.locY + 50;
+            hrView.locX = hrView.locX + 55;
+
+            var lWAView = View.findDrawableById("labelWAverage");
+            lWAView.locY = lWAView.locY + 20;
+            lWAView.locX = lWAView.locX - 55;
+
+            var wAView = View.findDrawableById("wAverage");
+            wAView.locY = wAView.locY + 50;
+            wAView.locX = wAView.locX - 55;
+
+            var lKgWattView = View.findDrawableById("lKgWatt");
+            lKgWattView.locY = lKgWattView.locY + 90;
+            lKgWattView.locX = lKgWattView.locX - 55;
+            
+            var kgView = View.findDrawableById("kgWatt");
+            kgView.locY = kgView.locY + 120;
+            kgView.locX = kgView.locX - 55;
 
             var lWattView = View.findDrawableById("labelWatt");
             lWattView.locY = lWattView.locY + 90;
-            lWattView.locX = lWattView.locX + 0;
+            lWattView.locX = lWattView.locX + 55;
             
             var wattView = View.findDrawableById("watt");
             wattView.locY = wattView.locY + 120;
-            wattView.locX = wattView.locX + 0;
+            wattView.locX = wattView.locX + 55;
         }
     }
 
@@ -152,6 +178,16 @@ class powerMView extends WatchUi.DataField {
             }
         }
 
+        // Average Speed in km/h
+        if(info has :averageSpeed){
+            if(info.averageSpeed != null){
+                asValue = info.averageSpeed as Number * 3.6;     // from mps to kmh
+            } else {
+                asValue = 0.00f;
+            }
+        }
+
+        // Heartrate in bpm
         if(info has :currentHeartRate){
             if(info.currentHeartRate != null){
                 hValue = info.currentHeartRate as Number;     // bpm
@@ -216,10 +252,24 @@ class powerMView extends WatchUi.DataField {
 
                 powerTotal = powerWind + powerResistance + powerRise;
                 //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
+                //Sys.println("DEBUG: onUpdate() KM      : " + mValue);
                 //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
                 //Sys.println("DEBUG: onUpdate() PRESSURE: " + paMeter);
                 //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
+
+                // Watt Average
+                powerOverall = powerOverall + powerTotal;
+                powerCount = powerCount +1;
+                powerAverage = powerOverall / powerCount;
+                avValue = powerAverage;
+                Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
+
+                // Watt / KG
+                kgValue = powerAverage / weightRider;
+                Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
+
+
             } else {
                 wValue = 0.00f;
             }
@@ -281,6 +331,22 @@ class powerMView extends WatchUi.DataField {
         }
         hr.setText(hValue.format("%i"));
 
+        var lWAverage = View.findDrawableById("labelWAverage") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            lWAverage.setColor(Graphics.COLOR_WHITE);
+        } else {
+            lWAverage.setColor(Graphics.COLOR_BLACK);
+        }
+        lWAverage.setText("Watt/Ø");
+
+        var wAverage = View.findDrawableById("wAverage") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            wAverage.setColor(Graphics.COLOR_WHITE);
+        } else {
+            wAverage.setColor(Graphics.COLOR_BLACK);
+        }
+        wAverage.setText(avValue.format("%i"));
+
         var labelAscent = View.findDrawableById("labelAscent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
             labelAscent.setColor(Graphics.COLOR_WHITE);
@@ -312,6 +378,22 @@ class powerMView extends WatchUi.DataField {
             aPressure.setColor(Graphics.COLOR_BLACK);
         }
         aPressure.setText(dValue.format("%.2f"));
+
+        var lKgWatt = View.findDrawableById("lKgWatt") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            lKgWatt.setColor(Graphics.COLOR_WHITE);
+        } else {
+            lKgWatt.setColor(Graphics.COLOR_BLACK);
+        }
+        lKgWatt.setText("WATT/KG");
+
+        var kgWatt = View.findDrawableById("kgWatt") as Text;
+        if (getBackgroundColor() == Graphics.COLOR_BLACK) {
+            kgWatt.setColor(Graphics.COLOR_WHITE);
+        } else {
+            kgWatt.setColor(Graphics.COLOR_BLACK);
+        }
+        kgWatt.setText(kgValue.format("%.2f"));
 
         var labelWatt = View.findDrawableById("labelWatt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
