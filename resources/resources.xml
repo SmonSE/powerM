@@ -1,0 +1,12 @@
+<resources>
+    <strings>
+        <string id="watt_label">watt</string>
+        <string id="watt_graph_label">watt</string>
+        <string id="watt_units">time</string>
+    </strings>
+    <fitContributions>
+        <fitField id="0" displayInChart="true" sortOrder = "0" precision="2"
+        chartTitle="@Strings.watt_graph_label" dataLabel="@Strings.watt_label"
+        unitLabel="@Strings.watt_units" fillColor="#0000FF" />
+    </fitContributions>
+</resources>

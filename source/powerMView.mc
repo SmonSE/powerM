@@ -10,6 +10,7 @@ using Toybox.System as Sys;
 using Toybox.Application as App;
 using Toybox.ActivityMonitor;
 using Toybox.UserProfile;
+using Toybox.FitContributor as Fit;
 
 class powerMView extends WatchUi.DataField {
 
@@ -59,6 +60,8 @@ class powerMView extends WatchUi.DataField {
 
     var newDistance = 0.00;
 
+    var verticalSpeedFitField;
+
     function initialize() {
         DataField.initialize();
         weightRider = userProfile.weight / 1000;    // Get Weight from User Profil on init
@@ -71,6 +74,16 @@ class powerMView extends WatchUi.DataField {
         avValue = 0.00f;
         asValue = 0.00f;
         kgValue = 0.00f;
+
+        // Create the custom FIT data field we want to record.
+        verticalSpeedFitField = DataField.createField(
+            "vertical_speed",
+            0,
+            Fit.DATA_TYPE_SINT16, // +/- 32767 
+            {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt"}
+            );
+        verticalSpeedFitField.setData(0); 
+
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -78,90 +91,72 @@ class powerMView extends WatchUi.DataField {
     function onLayout(dc as Dc) as Void {
         var obscurityFlags = DataField.getObscurityFlags();
 
-        // Top left quadrant so we'll use the top left layout
-        if (obscurityFlags == (OBSCURE_TOP | OBSCURE_LEFT)) {
-            View.setLayout(Rez.Layouts.TopLeftLayout(dc));
-
-        // Top right quadrant so we'll use the top right layout
-        } else if (obscurityFlags == (OBSCURE_TOP | OBSCURE_RIGHT)) {
-            View.setLayout(Rez.Layouts.TopRightLayout(dc));
-
-        // Bottom left quadrant so we'll use the bottom left layout
-        } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_LEFT)) {
-            View.setLayout(Rez.Layouts.BottomLeftLayout(dc));
-
-        // Bottom right quadrant so we'll use the bottom right layout
-        } else if (obscurityFlags == (OBSCURE_BOTTOM | OBSCURE_RIGHT)) {
-            View.setLayout(Rez.Layouts.BottomRightLayout(dc));
-
         // Use the generic, centered layout
-        } else {
-            View.setLayout(Rez.Layouts.MainLayout(dc));
+        View.setLayout(Rez.Layouts.MainLayout(dc));
 
-            var lSpeedView = View.findDrawableById("labelSpeed");
-            lSpeedView.locY = lSpeedView.locY - 120;
-            lSpeedView.locX = lSpeedView.locX - 55;
+        var lSpeedView = View.findDrawableById("labelSpeed");
+        lSpeedView.locY = lSpeedView.locY - 120;
+        lSpeedView.locX = lSpeedView.locX - 55;
 
-            var speedView = View.findDrawableById("speed");
-            speedView.locY = speedView.locY - 90;
-            speedView.locX = speedView.locX - 55;
+        var speedView = View.findDrawableById("speed");
+        speedView.locY = speedView.locY - 90;
+        speedView.locX = speedView.locX - 55;
 
-            var lDistanceView = View.findDrawableById("labelDistance");
-            lDistanceView.locY = lDistanceView.locY - 120;
-            lDistanceView.locX = lDistanceView.locX + 55;
+        var lDistanceView = View.findDrawableById("labelDistance");
+        lDistanceView.locY = lDistanceView.locY - 120;
+        lDistanceView.locX = lDistanceView.locX + 55;
             
-            var distanceView = View.findDrawableById("distance");
-            distanceView.locY = distanceView.locY - 90;
-            distanceView.locX = distanceView.locX + 55;
+        var distanceView = View.findDrawableById("distance");
+        distanceView.locY = distanceView.locY - 90;
+        distanceView.locX = distanceView.locX + 55;
 
-            var lAscentView = View.findDrawableById("labelAscent");
-            lAscentView.locY = lAscentView.locY - 50;
-            lAscentView.locX = lAscentView.locX - 55;
+        var lAscentView = View.findDrawableById("labelAscent");
+        lAscentView.locY = lAscentView.locY - 50;
+        lAscentView.locX = lAscentView.locX - 55;
             
-            var ascentView = View.findDrawableById("ascent");
-            ascentView.locY = ascentView.locY - 20;
-            ascentView.locX = ascentView.locX - 55;
+        var ascentView = View.findDrawableById("ascent");
+        ascentView.locY = ascentView.locY - 20;
+        ascentView.locX = ascentView.locX - 55;
 
-            var lAPressureView = View.findDrawableById("labelAPressure");
-            lAPressureView.locY = lAPressureView.locY - 50;
-            lAPressureView.locX = lAPressureView.locX + 55;
+        var lAPressureView = View.findDrawableById("labelAPressure");
+        lAPressureView.locY = lAPressureView.locY - 50;
+        lAPressureView.locX = lAPressureView.locX + 55;
             
-            var aPressureView = View.findDrawableById("aPressure");
-            aPressureView.locY = aPressureView.locY - 20;
-            aPressureView.locX = aPressureView.locX + 55;
+        var aPressureView = View.findDrawableById("aPressure");
+        aPressureView.locY = aPressureView.locY - 20;
+        aPressureView.locX = aPressureView.locX + 55;
 
-            var lHrView = View.findDrawableById("labelBpm");
-            lHrView.locY = lHrView.locY + 20;
-            lHrView.locX = lHrView.locX + 55;
+        var lHrView = View.findDrawableById("labelBpm");
+        lHrView.locY = lHrView.locY + 20;
+        lHrView.locX = lHrView.locX + 55;
 
-            var hrView = View.findDrawableById("bpm");
-            hrView.locY = hrView.locY + 50;
-            hrView.locX = hrView.locX + 55;
+        var hrView = View.findDrawableById("bpm");
+        hrView.locY = hrView.locY + 50;
+        hrView.locX = hrView.locX + 55;
 
-            var lWAView = View.findDrawableById("labelWAverage");
-            lWAView.locY = lWAView.locY + 20;
-            lWAView.locX = lWAView.locX - 55;
+        var lWAView = View.findDrawableById("labelWAverage");
+        lWAView.locY = lWAView.locY + 20;
+        lWAView.locX = lWAView.locX - 55;
 
-            var wAView = View.findDrawableById("wAverage");
-            wAView.locY = wAView.locY + 50;
-            wAView.locX = wAView.locX - 55;
+        var wAView = View.findDrawableById("wAverage");
+        wAView.locY = wAView.locY + 50;
+        wAView.locX = wAView.locX - 55;
 
-            var lKgWattView = View.findDrawableById("lKgWatt");
-            lKgWattView.locY = lKgWattView.locY + 90;
-            lKgWattView.locX = lKgWattView.locX - 55;
+        var lKgWattView = View.findDrawableById("lKgWatt");
+        lKgWattView.locY = lKgWattView.locY + 90;
+        lKgWattView.locX = lKgWattView.locX - 55;
             
-            var kgView = View.findDrawableById("kgWatt");
-            kgView.locY = kgView.locY + 120;
-            kgView.locX = kgView.locX - 55;
+        var kgView = View.findDrawableById("kgWatt");
+        kgView.locY = kgView.locY + 120;
+        kgView.locX = kgView.locX - 55;
 
-            var lWattView = View.findDrawableById("labelWatt");
-            lWattView.locY = lWattView.locY + 90;
-            lWattView.locX = lWattView.locX + 55;
+        var lWattView = View.findDrawableById("labelWatt");
+        lWattView.locY = lWattView.locY + 90;
+        lWattView.locX = lWattView.locX + 55;
             
-            var wattView = View.findDrawableById("watt");
-            wattView.locY = wattView.locY + 120;
-            wattView.locX = wattView.locX + 55;
-        }
+        var wattView = View.findDrawableById("watt");
+        wattView.locY = wattView.locY + 120;
+        wattView.locX = wattView.locX + 55;
     }
 
     // The given info object contains all the current workout information.
@@ -170,6 +165,7 @@ class powerMView extends WatchUi.DataField {
     // guarantee that compute() will be called before onUpdate().
     function compute(info as Activity.Info) as Void {
         // See Activity.Info in the documentation for available information.
+
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
                 sValue = info.currentSpeed as Number * 3.6;     // from mps to kmh
@@ -281,6 +277,8 @@ class powerMView extends WatchUi.DataField {
                 kgValue = powerAverage / weightRider;
                 //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
 
+                // Add Values to FitContributor
+                verticalSpeedFitField.setData(powerTotal.toNumber()); 
 
             } else {
                 wValue = 0.00f;

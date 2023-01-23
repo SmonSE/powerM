@@ -2,6 +2,7 @@ import Toybox.Application;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
+
 class powerMApp extends Application.AppBase {
 
     function initialize() {
@@ -20,7 +21,6 @@ class powerMApp extends Application.AppBase {
     function getInitialView() as Array<Views or InputDelegates>? {
         return [ new powerMView() ] as Array<Views or InputDelegates>;
     }
-
 }
 
 function getApp() as powerMApp {
