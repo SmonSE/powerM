@@ -1,4 +1,8 @@
 <properties>
     <property id="appVersion" type="string">1.0.0</property>
     <property id="dis" type="number">0</property>
+    <!--        to Bike Equip Weight      -->
+    <property id="bike_Equip_Weight" type="number">10</property>
+
+    <property id="drag_prop" type="number">0</property>
 </properties>

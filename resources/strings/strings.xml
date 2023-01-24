@@ -14,5 +14,13 @@
     <string id="wattAv_label">Watt/Ø</string>
     <string id="wattAv_graph_label">Power in watt/Ø</string>
     <string id="wattAv_units">time</string>
+    <!--                                            -->
+    <string id="bike_Equip_Weight_title">Bike weight</string>
+    <!--                                            -->
+    <string id="drag_title">Luftreibungzahl Cw*A</string>
+    <string id="drag_0">0.25</string>
+    <string id="drag_1">0.28</string>
+    <string id="drag_2">0.525</string>
+    
 
 </strings>
