@@ -39,9 +39,9 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                // Aufstieg / 100 
     var speedVertical = 0;          // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
 
-    var weightRider = 80;           // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
-    var bikeEquipWeight = 15;       // Gewicht Bike + Equipment
-    var drag = 0.3;                // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+    var weightRider = 0;           // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
+    var bikeEquipWeight = 0;       // Gewicht Bike + Equipment
+    var drag = 0.28;                // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
     var airDensity = 1.205;          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
     var rollingDrag = 0.006;        // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
     var g = 9.81;                   // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
@@ -60,7 +60,9 @@ class powerMView extends WatchUi.DataField {
 
     var newDistance = 0.00;
 
-    var verticalSpeedFitField;
+    var fitField1;
+    var fitField2;
+    var fitField3;
 
     function initialize() {
         DataField.initialize();
@@ -76,22 +78,20 @@ class powerMView extends WatchUi.DataField {
         kgValue = 0.00f;
 
         // Create the custom FIT data field we want to record.
-        verticalSpeedFitField = DataField.createField(
-            "vertical_speed",
-            0,
-            Fit.DATA_TYPE_SINT16, // +/- 32767 
-            {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt"}
-            );
-        verticalSpeedFitField.setData(0); 
+        fitField1 = DataField.createField("watt_time", 0, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/time"});
+        fitField1.setData(0); 
 
+        fitField2 = DataField.createField("watt_kg", 1, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/kg"});
+        fitField2.setData(0);
+
+        fitField3 = DataField.createField("watt_average", 2, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/average"});
+        fitField3.setData(0);  
     }
 
     // Set your layout here. Anytime the size of obscurity of
     // the draw context is changed this will be called.
     function onLayout(dc as Dc) as Void {
         var obscurityFlags = DataField.getObscurityFlags();
-
-        // Use the generic, centered layout
         View.setLayout(Rez.Layouts.MainLayout(dc));
 
         var lSpeedView = View.findDrawableById("labelSpeed");
@@ -218,7 +218,7 @@ class powerMView extends WatchUi.DataField {
                     startPressure = startPressure.toFloat() * 0.010197162129779;    // convert PA to cm 
                     start = true;
                 }   
-                
+
                 dValue = info.ambientPressure as Number;                            
                 dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
 
@@ -268,7 +268,7 @@ class powerMView extends WatchUi.DataField {
 
                 // Watt Average
                 powerOverall = powerOverall + powerTotal;
-                powerCount = powerCount +1;
+                powerCount = powerCount +1;                         // todo: nur wenn km/h nicht 0 ist 
                 powerAverage = powerOverall / powerCount;
                 avValue = powerAverage;
                 //Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
@@ -278,7 +278,9 @@ class powerMView extends WatchUi.DataField {
                 //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
 
                 // Add Values to FitContributor
-                verticalSpeedFitField.setData(powerTotal.toNumber()); 
+                fitField1.setData(wValue.toNumber()); 
+                fitField2.setData(kgValue.toNumber()); 
+                fitField3.setData(avValue.toNumber());
 
             } else {
                 wValue = 0.00f;

@@ -1,12 +1,28 @@
 <resources>
     <strings>
-        <string id="watt_label">watt</string>
-        <string id="watt_graph_label">watt</string>
+        <string id="watt_label">Watt</string>
+        <string id="watt_graph_label">Power in watt</string>
         <string id="watt_units">time</string>
+        <!--                                            -->
+        <string id="wattKg_label">Watt/kg</string>
+        <string id="wattKg_graph_label">Power in watt/kg</string>
+        <string id="wattKg_units">time</string>
+        <!--                                            -->
+        <string id="wattAv_label">Watt/Ø</string>
+        <string id="wattAv_graph_label">Power in watt/Ø</string>
+        <string id="wattAv_units">time</string>
     </strings>
     <fitContributions>
         <fitField id="0" displayInChart="true" sortOrder = "0" precision="2"
         chartTitle="@Strings.watt_graph_label" dataLabel="@Strings.watt_label"
         unitLabel="@Strings.watt_units" fillColor="#0000FF" />
+        <!--                                                                    -->
+        <fitField id="1" displayInChart="true" sortOrder = "0" precision="2"
+        chartTitle="@Strings.wattKg_graph_label" dataLabel="@Strings.wattKg_label"
+        unitLabel="@Strings.wattKg_units" fillColor="#00FF00" />
+        <!--                                                                    -->
+        <fitField id="2" displayInChart="true" sortOrder = "0" precision="2"
+        chartTitle="@Strings.wattAv_graph_label" dataLabel="@Strings.wattAv_label"
+        unitLabel="@Strings.wattAv_units" fillColor="#FF0000" />
     </fitContributions>
 </resources>
