@@ -1,3 +1,4 @@
 <properties>
+    <property id="appVersion" type="string">1.0.0</property>
     <property id="dis" type="number">0</property>
 </properties>

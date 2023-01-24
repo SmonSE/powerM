@@ -1,3 +1,18 @@
 <strings>
+
     <string id="AppName">powerM</string>
+    <string id="AppVersionTitle">Version</string>
+    <!--                                            -->
+    <string id="watt_label">Watt</string>
+    <string id="watt_graph_label">Power in watt</string>
+    <string id="watt_units">time</string>
+    <!--                                            -->
+    <string id="wattKg_label">Watt/kg</string>
+    <string id="wattKg_graph_label">Power in watt/kg</string>
+    <string id="wattKg_units">time</string>
+    <!--                                            -->
+    <string id="wattAv_label">Watt/Ø</string>
+    <string id="wattAv_graph_label">Power in watt/Ø</string>
+    <string id="wattAv_units">time</string>
+
 </strings>

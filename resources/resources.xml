@@ -1,17 +1,4 @@
 <resources>
-    <strings>
-        <string id="watt_label">Watt</string>
-        <string id="watt_graph_label">Power in watt</string>
-        <string id="watt_units">time</string>
-        <!--                                            -->
-        <string id="wattKg_label">Watt/kg</string>
-        <string id="wattKg_graph_label">Power in watt/kg</string>
-        <string id="wattKg_units">time</string>
-        <!--                                            -->
-        <string id="wattAv_label">Watt/Ø</string>
-        <string id="wattAv_graph_label">Power in watt/Ø</string>
-        <string id="wattAv_units">time</string>
-    </strings>
     <fitContributions>
         <fitField id="0" displayInChart="true" sortOrder = "0" precision="2"
         chartTitle="@Strings.watt_graph_label" dataLabel="@Strings.watt_label"
@@ -25,4 +12,31 @@
         chartTitle="@Strings.wattAv_graph_label" dataLabel="@Strings.wattAv_label"
         unitLabel="@Strings.wattAv_units" fillColor="#FF0000" />
     </fitContributions>
+
+    <settings>
+        <setting propertyKey="@Properties.appVersion" title="@Strings.AppVersionTitle">
+            <settingConfig type="alphaNumeric" readonly="true" />
+        </setting>
+        <!--
+        <setting propertyKey="@Properties.myString" title="@Strings.MyStringTitle" prompt="@Strings.MyStringPrompt">
+            <settingConfig type="list">
+                <listEntry value="0">@Strings.HelloWorld</listEntry>
+                <listEntry value="1">@Strings.Ackbar</listEntry>
+                <listEntry value="2">@Strings.Garmin</listEntry>
+            </settingConfig>
+        </setting>
+
+        <setting propertyKey="@Properties.myNumber" title="@Strings.MyNumberTitle" prompt="@Strings.MyNumberPrompt">
+            <settingConfig type="numeric" errorMessage="@Strings.MyNumberError" />
+        </setting>
+
+        <setting propertyKey="@Properties.screenSleep" title="@Strings.ScreenSleepTitle">
+            <settingConfig type="boolean" />
+        </setting>
+
+        <setting propertyKey="@Properties.username" title="@Strings.UsernameTitle">
+            <settingConfig type="alphaNumeric" required="true" />
+        </setting>
+        -->
+    </settings>
 </resources>
