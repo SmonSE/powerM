@@ -29,6 +29,23 @@
     		<listEntry value="2">@Strings.drag_2</listEntry>
     	    </settingConfig>
     	</setting>
+        <!--                                                                    -->        
+    	<setting propertyKey="@Properties.airDensity_prop" title="@Strings.airDensity_title">
+    		<settingConfig type="numeric" readonly="false" />
+    	</setting>
+        <!--                                                                    -->        
+    	<setting propertyKey="@Properties.g_prop" title="@Strings.g_title">
+    		<settingConfig type="numeric" readonly="false" />
+    	</setting>
+        <!--                                                                    --> 
+        <setting propertyKey="@Properties.rollingDrag_prop" title="@Strings.rollingDrag_title">
+    		<settingConfig type="list">
+    		<listEntry value="0">@Strings.rollingDrag_0</listEntry>
+    		<listEntry value="1">@Strings.rollingDrag_1</listEntry>
+    		<listEntry value="2">@Strings.rollingDrag_2</listEntry>
+            <listEntry value="3">@Strings.rollingDrag_3</listEntry>
+    	    </settingConfig>
+    	</setting>
 
     </settings>
 </resources>

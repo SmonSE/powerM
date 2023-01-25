@@ -1,6 +1,3 @@
-// https://ilovecycling.de/training/wattmonster-oder-wie-viel-watt-kann-der-mensch-treten/
-// Luftdichte berechnen: https://studyflix.de/chemie/luftdichte-3009
-
 import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -28,8 +25,11 @@ class powerMView extends WatchUi.DataField {
     hidden var asValue as Numeric;                      // Average Speed
     hidden var kgValue as Numeric;                      // Watt / kg
 
-    hidden var bikeEquipWeight as Numeric;
-    hidden var drag as Numeric;
+    hidden var bikeEquipWeight  as Numeric;
+    hidden var drag             as Numeric;
+    hidden var airDensity       as Numeric;
+    hidden var g                as Numeric;
+    hidden var rollingDrag      as Numeric;
 
     var startWatt = false;                              // Set Watt value at the beginning to avoid empty data field
     var start = false;                                  // Set StartPresure once at the beginning
@@ -41,12 +41,7 @@ class powerMView extends WatchUi.DataField {
     var weightOverall = 0;                              // Gewicht Fahrer + Bike + Equipment
     var riseDec = 0;                                    // Aufstieg / 100 
     var speedVertical = 0;                              // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
-
     var weightRider = 0;                                // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
-
-    var airDensity = 1.205;                             // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-    var rollingDrag = 0.006;                            // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
-    var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
     var paMeter = 0;
@@ -79,9 +74,12 @@ class powerMView extends WatchUi.DataField {
         asValue = 0.00f;
         kgValue = 0.00f;
 
-        weightRider = userProfile.weight / 1000;                // Get Weight from User Profil on init
-        bikeEquipWeight = app.getProperty("bike_Equip_Weight"); // Gewicht Bike + Equipment
-        drag = app.getProperty("drag_prop").toFloat();          // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+        weightRider = userProfile.weight / 1000;                            // Get Weight from User Profil on init
+        bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat();   // Gewicht Bike + Equipment
+        drag = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+        airDensity = app.getProperty("airDensity_prop").toFloat();          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
+        g = app.getProperty("g_prop").toFloat();                            // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
+        rollingDrag = app.getProperty("rollingDrag_prop").toNumber();       // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
 
 
         // Create the custom FIT data field we want to record.
@@ -93,6 +91,12 @@ class powerMView extends WatchUi.DataField {
 
         fitField3 = DataField.createField("watt_average", 2, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/average"});
         fitField3.setData(0);  
+
+        Sys.println("DEBUG: Properties ( bikeEquipWeight ): " + bikeEquipWeight);
+        Sys.println("DEBUG: Properties ( drag            ): " + drag);
+        Sys.println("DEBUG: Properties ( airDensity      ): " + airDensity);
+        Sys.println("DEBUG: Properties ( gravity         ): " + g);
+        Sys.println("DEBUG: Properties ( rolling drag    ): " + rollingDrag);
     }
 
     // Set your layout here. Anytime the size of obscurity of
