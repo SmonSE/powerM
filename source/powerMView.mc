@@ -33,6 +33,7 @@ class powerMView extends WatchUi.DataField {
 
     var startWatt = false;                              // Set Watt value at the beginning to avoid empty data field
     var start = false;                                  // Set StartPresure once at the beginning
+    var stopCount = false;                              // Stop Counting if speed is 0
 
     var count = 0;                                      // Time Counter
     var drop = 0;                                       // Höhenunterschied 
@@ -353,21 +354,25 @@ class powerMView extends WatchUi.DataField {
                 //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
 
-                // Watt Average
-                powerOverall = powerOverall + powerTotal;
-                powerCount = powerCount +1;                         // todo: nur wenn km/h nicht 0 ist 
-                powerAverage = powerOverall / powerCount;
-                avValue = powerAverage;
-                //Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
+                if (sValue > 0) { 
+                    // Watt Average
+                    powerOverall = powerOverall + powerTotal;
+                    powerCount = powerCount + 1;
+                    powerAverage = powerOverall / powerCount;
+                    avValue = powerAverage;
+                    //Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
 
-                // Watt / KG
-                kgValue = powerAverage / weightRider;
-                //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
+                    // Watt / KG
+                    kgValue = powerAverage / weightRider;
+                    //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
 
-                // Add Values to FitContributor
-                fitField1.setData(wValue.toNumber()); 
-                fitField2.setData(kgValue.toNumber()); 
-                fitField3.setData(avValue.toNumber());
+                    // Add Values to FitContributor
+                    fitField1.setData(wValue.toNumber()); 
+                    fitField2.setData(kgValue.toNumber()); 
+                    fitField3.setData(avValue.toNumber());
+                }
+
+
 
             } else {
                 wValue = 0.00f;
