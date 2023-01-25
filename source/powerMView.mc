@@ -28,8 +28,8 @@ class powerMView extends WatchUi.DataField {
     hidden var bikeEquipWeight  as Numeric;
     hidden var drag             as Numeric;
     hidden var airDensity       as Numeric;
-    hidden var g                as Numeric;
     hidden var rollingDrag      as Numeric;
+    hidden var soil             as Numeric;
 
     var startWatt = false;                              // Set Watt value at the beginning to avoid empty data field
     var start = false;                                  // Set StartPresure once at the beginning
@@ -42,6 +42,7 @@ class powerMView extends WatchUi.DataField {
     var riseDec = 0;                                    // Aufstieg / 100 
     var speedVertical = 0;                              // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
     var weightRider = 0;                                // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
+    var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
     var paMeter = 0;
@@ -74,13 +75,82 @@ class powerMView extends WatchUi.DataField {
         asValue = 0.00f;
         kgValue = 0.00f;
 
-        weightRider = userProfile.weight / 1000;                            // Get Weight from User Profil on init
+        //weightRider = userProfile.weight / 1000;                            // Get Weight from User Profil on init
+        weightRider = app.getProperty("riderWeight_prop").toFloat();
         bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat();   // Gewicht Bike + Equipment
-        drag = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2] /Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+        drag = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
         airDensity = app.getProperty("airDensity_prop").toFloat();          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-        g = app.getProperty("g_prop").toFloat();                            // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
         rollingDrag = app.getProperty("rollingDrag_prop").toNumber();       // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
+        soil = app.getProperty("soil_prop").toNumber();                     // Faktor für Untergrund Trainer, Asphalt, Schotterweg, Waldweg
 
+        switch ( drag ) {
+            case 1: {
+                drag = 0.25;
+                break;
+            }
+            case 2: {
+                drag = 0.28;
+                break;
+            }
+            case 3: {
+                drag = 0.45;
+                break;
+            }
+            case 4: {
+                drag = 0.525;
+                break;
+            }
+            default: {
+                drag = 0.00;
+                break;
+            }
+        }
+
+        switch ( rollingDrag ) {
+            case 1: {
+                rollingDrag = 0.004;
+                break;
+            }
+            case 2: {
+                rollingDrag = 0.006;
+                break;
+            }
+            case 3: {
+                rollingDrag = 0.008;
+                break;
+            }
+            case 4: {
+                rollingDrag = 0.009;
+                break;
+            }
+            default: {
+                drag = 0.00;
+                break;
+            }
+        }
+
+        switch ( soil ) {
+            case 1: {
+                soil = 0.85;
+                break;
+            }
+            case 2: {
+                soil = 1;
+                break;
+            }
+            case 3: {
+                soil = 1.5;
+                break;
+            }
+            case 4: {
+                soil = 3.0;
+                break;
+            }
+            default: {
+                drag = 0.00;
+                break;
+            }
+        }
 
         // Create the custom FIT data field we want to record.
         fitField1 = DataField.createField("watt_time", 0, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/time"});
@@ -91,12 +161,13 @@ class powerMView extends WatchUi.DataField {
 
         fitField3 = DataField.createField("watt_average", 2, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/average"});
         fitField3.setData(0);  
-
+       
+        Sys.println("DEBUG: Properties ( riderWeight     ): " + weightRider);
         Sys.println("DEBUG: Properties ( bikeEquipWeight ): " + bikeEquipWeight);
         Sys.println("DEBUG: Properties ( drag            ): " + drag);
         Sys.println("DEBUG: Properties ( airDensity      ): " + airDensity);
-        Sys.println("DEBUG: Properties ( gravity         ): " + g);
         Sys.println("DEBUG: Properties ( rolling drag    ): " + rollingDrag);
+        Sys.println("DEBUG: Properties ( soil            ): " + soil);
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -229,15 +300,20 @@ class powerMView extends WatchUi.DataField {
                     startPressure = startPressure.toFloat() * 0.010197162129779;    // convert PA to cm 
                     start = true;
                 }   
+                
+                dValue = info.ambientPressure as Number;  
+                if (dValue > 0) {                          
+                    dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
 
-                dValue = info.ambientPressure as Number;                            
-                dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
+                    calcPressure = startPressure - dValue;
+                    paMeter = calcPressure * 10;                                        // value 0.10 = 1Meter
 
-                calcPressure = startPressure - dValue;
-                paMeter = calcPressure * 10;                                        // value 0.10 = 1Meter
-
-                startPressure = dValue;                                             // 
-                dValue = paMeter;
+                    startPressure = dValue;                                             // 
+                    dValue = paMeter;
+                } else {
+                    startPressure = 0;  
+                    dValue = 0;
+                }
 
             } else {
                 dValue = 0.00f;
@@ -256,13 +332,13 @@ class powerMView extends WatchUi.DataField {
                 riseDec = rise / 100;
                 speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
-                // Pa = p * 0,5 * cdA * V * (v-vw)2
+                // Pa = p * 0,5 * cdA * v * (v-vw)2
                 // (ρ = Luftdichte 1,205 (kg/m3); cdA = 0,3 m2; v = 40km/h; vw = Gegenwind = 0 km/h)
-                powerWind = drag * 0.5 * airDensity * speedMS * speedMS * speedMS;
+                powerWind = airDensity * 0.5 * drag * speedMS * speedMS * speedMS;
                 // Pr = c1 * m * g * v 
                 // (c1 = Rollwiderstandsfaktor; m = Masse (Systemgewicht); g 0 ),81 m/s2; v = 40 km/h)
                 // Pr = 0,004 * 81,5 * 9,81 * 40 / 3,6 = 36 Watt (aufgerundet)
-                powerResistance = weightOverall * g * rollingDrag * speedMS;
+                powerResistance = weightOverall * g * (rollingDrag * soil) * speedMS;
                 // Pc = (i/100) * M * g * v
                 // (i = 3,9%; m = 81,5kg, v = 40km/h, g = 9,81 m/s2)
                 // Pc = 3,9/100 * 81,5 * 9,81 * 40/3,6 = 346 Watt (abgerundet)

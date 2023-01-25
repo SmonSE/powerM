@@ -15,19 +15,26 @@
     <string id="wattAv_graph_label">Power in watt/Ø</string>
     <string id="wattAv_units">time</string>
     <!--                                            -->
-    <string id="bike_Equip_Weight_title">Bike weight</string>
-    <string id="airDensity_title">Air density</string>
-    <string id="g_title">Gravity</string>
+    <string id="bike_Equip_Weight_title">Bike/Ausrüstung Gewicht</string>
+    <string id="airDensity_title">Luftdichte</string>
+    <string id="riderWeight_title">Fahrer Gewicht</string>
     <!--                                            -->
-    <string id="drag_title">Luftreibungzahl Cw*A</string>
-    <string id="drag_0">0.25</string>
-    <string id="drag_1">0.28</string>
-    <string id="drag_2">0.525</string>
+    <string id="drag_title">Luftreibungzahl Cw*A [m2]</string>
+    <string id="drag_1">Trainer: 0.25</string>
+    <string id="drag_2">Race: 0.28</string>
+    <string id="drag_3">Road: 0.45</string>
+    <string id="drag_4">MTB: 0.525</string>
      <!--                                            -->   
     <string id="rollingDrag_title">Rollreibungszahl cr Reifen</string>
-    <string id="rollingDrag_0">0.004</string>
-    <string id="rollingDrag_1">0.006</string>
-    <string id="rollingDrag_2">0.008</string>
-    <string id="rollingDrag_3">0.009</string>
+    <string id="rollingDrag_1">Trainer: 0.004</string>
+    <string id="rollingDrag_2">Race: 0.006</string>
+    <string id="rollingDrag_3">Road: 0.008</string>
+    <string id="rollingDrag_4">MTB: 0.009</string>
+     <!--                                            -->   
+    <string id="soil_title">Faktor für Untergrund</string>
+    <string id="soil_1">Trainer: 0.85</string>
+    <string id="soil_2">Asphalt: 1.0</string>
+    <string id="soil_3">Schotter: 1.5</string>
+    <string id="soil_4">Waldboden: 2.5</string>    
 
 </strings>

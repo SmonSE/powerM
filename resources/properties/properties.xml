@@ -2,9 +2,10 @@
     <property id="appVersion" type="string">1.0.0</property>
     <property id="dis" type="number">0</property>
     <!--          settings in app           -->
+    <property id="riderWeight_prop" type="float">85.0</property>
     <property id="bike_Equip_Weight" type="float">15.0</property>
-    <property id="drag_prop" type="number">0</property>
+    <property id="drag_prop" type="number">1</property>
     <property id="airDensity_prop" type="float">1.205</property>
-    <property id="g_prop" type="float">9.81</property>
-    <property id="rollingDrag_prop" type="number">0</property>
+    <property id="rollingDrag_prop" type="number">1</property>
+    <property id="soil_prop" type="number">1</property>
 </properties>

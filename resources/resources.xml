@@ -17,6 +17,10 @@
         <setting propertyKey="@Properties.appVersion" title="@Strings.AppVersionTitle">
             <settingConfig type="alphaNumeric" readonly="true" />
         </setting>
+        <!--                                                                    --> 
+        <setting propertyKey="@Properties.riderWeight_prop" title="@Strings.riderWeight_title">
+    		<settingConfig type="numeric" readonly="false" />
+    	</setting>
         <!--                                                                    -->        
     	<setting propertyKey="@Properties.bike_Equip_Weight" title="@Strings.bike_Equip_Weight_title">
     		<settingConfig type="numeric" readonly="false" />
@@ -24,9 +28,10 @@
         <!--                                                                    --> 
         <setting propertyKey="@Properties.drag_prop" title="@Strings.drag_title">
     		<settingConfig type="list">
-    		<listEntry value="0">@Strings.drag_0</listEntry>
     		<listEntry value="1">@Strings.drag_1</listEntry>
     		<listEntry value="2">@Strings.drag_2</listEntry>
+    		<listEntry value="3">@Strings.drag_3</listEntry>
+            <listEntry value="4">@Strings.drag_4</listEntry>
     	    </settingConfig>
     	</setting>
         <!--                                                                    -->        
@@ -34,16 +39,21 @@
     		<settingConfig type="numeric" readonly="false" />
     	</setting>
         <!--                                                                    -->        
-    	<setting propertyKey="@Properties.g_prop" title="@Strings.g_title">
-    		<settingConfig type="numeric" readonly="false" />
-    	</setting>
-        <!--                                                                    --> 
         <setting propertyKey="@Properties.rollingDrag_prop" title="@Strings.rollingDrag_title">
     		<settingConfig type="list">
-    		<listEntry value="0">@Strings.rollingDrag_0</listEntry>
     		<listEntry value="1">@Strings.rollingDrag_1</listEntry>
     		<listEntry value="2">@Strings.rollingDrag_2</listEntry>
-            <listEntry value="3">@Strings.rollingDrag_3</listEntry>
+    		<listEntry value="3">@Strings.rollingDrag_3</listEntry>
+            <listEntry value="4">@Strings.rollingDrag_4</listEntry>
+    	    </settingConfig>
+    	</setting>
+        <!--                                                                    --> 
+        <setting propertyKey="@Properties.soil_prop" title="@Strings.soil_title">
+    		<settingConfig type="list">
+    		<listEntry value="1">@Strings.soil_1</listEntry>
+    		<listEntry value="2">@Strings.soil_2</listEntry>
+    		<listEntry value="3">@Strings.soil_3</listEntry>
+            <listEntry value="4">@Strings.soil_4</listEntry>
     	    </settingConfig>
     	</setting>
 
