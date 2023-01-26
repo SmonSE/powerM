@@ -305,11 +305,13 @@ class powerMView extends WatchUi.DataField {
                 dValue = info.ambientPressure as Number;  
                 if (dValue > 0) {                          
                     dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
-
                     calcPressure = startPressure - dValue;
                     paMeter = calcPressure * 10;                                        // value 0.10 = 1Meter
-
-                    startPressure = dValue;                                             // 
+                    //Sys.println("DEBUG: paMeter(2decimal) :" + paMeter);              // paMeter
+                    paMeter = paMeter.format("%0.1f");
+                    paMeter = paMeter.toFloat();                                        // paMeter rounded (needs to tested)
+                    //Sys.println("DEBUG: paMeter(1decimal) :" + paMeter);                
+                    startPressure = dValue;                                              
                     dValue = paMeter;
                 } else {
                     startPressure = 0;  
