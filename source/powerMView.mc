@@ -46,6 +46,7 @@ class powerMView extends WatchUi.DataField {
     var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
+    var totalPressure = 0;
     var paMeter = 0;
     var calcPressure = 0;
 
@@ -294,29 +295,32 @@ class powerMView extends WatchUi.DataField {
         }
 
         // Ambient Pressure / Change to Barometer
-        if(info has :ambientPressure){
-            if(info.ambientPressure != null){
+        if(info has :meanSeaLevelPressure){
+            if(info.meanSeaLevelPressure != null){
                 if (start == false) {
-                    startPressure = info.ambientPressure as Number; 
-                    startPressure = startPressure.toFloat() * 0.010197162129779;    // convert PA to cm 
+                    startPressure = info.meanSeaLevelPressure as Number; 
+                    startPressure = startPressure.toFloat() * 0.01;             // convert pa to hpa
+                    Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
                 }   
                 
-                dValue = info.ambientPressure as Number;  
+                dValue = info.meanSeaLevelPressure as Number;  
                 if (dValue > 0) {                          
-                    dValue = dValue.toFloat() * 0.010197162129779;                      // convert PA to cm 
-                    calcPressure = startPressure - dValue;
-                    paMeter = calcPressure * 10;                                        // value 0.10 = 1Meter
-                    //Sys.println("DEBUG: paMeter(2decimal) :" + paMeter);              // paMeter
-                    paMeter = paMeter.format("%0.1f");
-                    paMeter = paMeter.toFloat();                                        // paMeter rounded (needs to tested)
+                    dValue = dValue.toFloat() * 0.01;                               // convert pa to hpa
+                    calcPressure = dValue - startPressure;
+                    paMeter = (calcPressure * 1) * 8.4;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                    paMeter = (paMeter * -100) / 2;                                 // this fomula makes the magic part
+                    
+                    if (paMeter > 0) {
+                        totalPressure += paMeter;
+                    }
+                    //Sys.println("DEBUG: totalPaPressure():" + totalPressure);     // pa in m -> total
+                    //paMeter = paMeter.format("%0.1f");
+                    //paMeter = paMeter.toFloat();                                  // paMeter rounded (needs to tested)
                     //Sys.println("DEBUG: paMeter(1decimal) :" + paMeter);                
                     startPressure = dValue;                                              
                     dValue = paMeter;
-                } else {
-                    startPressure = 0;  
-                    dValue = 0;
-                }
+                } 
 
             } else {
                 dValue = 0.00f;
@@ -351,8 +355,9 @@ class powerMView extends WatchUi.DataField {
                 powerTotal = powerWind + powerResistance + powerRise;
                 //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
                 //Sys.println("DEBUG: onUpdate() KM      : " + mValue);
+                Sys.println("DEBUG: onUpdate() HÖHENMETER: " + aValue);
                 //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
-                //Sys.println("DEBUG: onUpdate() PRESSURE: " + paMeter);
+                Sys.println("DEBUG: onUpdate() PRESSURE/M: " + totalPressure);
                 //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
 
