@@ -486,7 +486,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             ascent.setColor(Graphics.COLOR_BLACK);
         }
-        ascent.setText(paMeter.format("%.2f"));
+        ascent.setText(totalPressureUp.format("%.2f"));
 
         var labelAPressure = View.findDrawableById("labelAPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -494,7 +494,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelAPressure.setColor(Graphics.COLOR_BLACK);
         }
-        labelAPressure.setText("hPA/m");
+        labelAPressure.setText("hPa/m");
 
         var aPressure = View.findDrawableById("aPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -502,7 +502,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             aPressure.setColor(Graphics.COLOR_BLACK);
         }
-        aPressure.setText(totalPressureUp.format("%.2f"));
+        aPressure.setText(paMeter.format("%.2f"));
 
         var lKgWatt = View.findDrawableById("lKgWatt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
