@@ -46,8 +46,10 @@ class powerMView extends WatchUi.DataField {
     var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
 
     var startPressure = 0;
-    var totalPressure = 0;
+    var totalPressureUp = 0;
+    var totalPressureDown = 0;
     var paMeter = 0;
+    var paMeterD = 0;
     var calcPressure = 0;
 
     var powerTotal = 0;
@@ -250,6 +252,7 @@ class powerMView extends WatchUi.DataField {
     function compute(info as Activity.Info) as Void {
         // See Activity.Info in the documentation for available information.
 
+        // Speed in km/h
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
                 sValue = info.currentSpeed as Number * 3.6;     // from mps to kmh
@@ -306,20 +309,27 @@ class powerMView extends WatchUi.DataField {
                 
                 dValue = info.meanSeaLevelPressure as Number;  
                 if (dValue > 0) {                          
-                    dValue = dValue.toFloat() * 0.01;                               // convert pa to hpa
-                    calcPressure = dValue - startPressure;
-                    paMeter = (calcPressure * 1) * 8.4;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                    paMeter = (paMeter * -100) / 2;                                 // this fomula makes the magic part
-                    
-                    if (paMeter > 0) {
-                        totalPressure += paMeter;
+                    dValue = dValue.toFloat() * 0.01;                             // convert pa to hpa
+                    if (dValue >= startPressure) {
+                        calcPressure = dValue - startPressure;
+                        paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                        paMeter = (paMeter * -100) / 2;                            // this fomula makes the magic part
+                        totalPressureUp += paMeter;      
+                        startPressure = dValue;                                              
+                        dValue = paMeter;
+                        Sys.println("DEBUG: paMeter() :" + paMeter);
+
+                    } else if (dValue < startPressure) {
+                        calcPressure = dValue - startPressure;
+                        paMeterD = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                        paMeterD = (paMeterD * -100) / 2;                           // this fomula makes the magic part
+                        totalPressureDown += paMeterD;          
+                        startPressure = dValue;                                              
+                        Sys.println("DEBUG: paMeterD() :" + paMeterD); 
+
+                    } else {
+                        Sys.println("DEBUG: else()!"); 
                     }
-                    //Sys.println("DEBUG: totalPaPressure():" + totalPressure);     // pa in m -> total
-                    //paMeter = paMeter.format("%0.1f");
-                    //paMeter = paMeter.toFloat();                                  // paMeter rounded (needs to tested)
-                    //Sys.println("DEBUG: paMeter(1decimal) :" + paMeter);                
-                    startPressure = dValue;                                              
-                    dValue = paMeter;
                 } 
 
             } else {
@@ -331,7 +341,7 @@ class powerMView extends WatchUi.DataField {
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
                 // Pa = Luftwiderstand
-                // Pr = Rollwiderstand
+                // Pr = Rollwiderstand / Rollreibungszahl = 0,009
                 // Pc = Steigungswiderstand
                 rise = paMeter / (Math.sqrt(10 * 10 - paMeter * paMeter)) * 100;
                 speedMS = sValue / 3.6;                                             // Speed in m per sec
@@ -339,25 +349,21 @@ class powerMView extends WatchUi.DataField {
                 riseDec = rise / 100;
                 speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
-                // Pa = p * 0,5 * cdA * v * (v-vw)2
-                // (ρ = Luftdichte 1,205 (kg/m3); cdA = 0,3 m2; v = 40km/h; vw = Gegenwind = 0 km/h)
+                // waero
                 powerWind = airDensity * 0.5 * drag * speedMS * speedMS * speedMS;
-                // Pr = c1 * m * g * v 
-                // (c1 = Rollwiderstandsfaktor; m = Masse (Systemgewicht); g 0 ),81 m/s2; v = 40 km/h)
-                // Pr = 0,004 * 81,5 * 9,81 * 40 / 3,6 = 36 Watt (aufgerundet)
+                // wrr = (Crr * m * g * v) 
                 powerResistance = weightOverall * g * (rollingDrag * soil) * speedMS;
-                // Pc = (i/100) * M * g * v
-                // (i = 3,9%; m = 81,5kg, v = 40km/h, g = 9,81 m/s2)
-                // Pc = 3,9/100 * 81,5 * 9,81 * 40/3,6 = 346 Watt (abgerundet)
+                // wPE = (s * m * g * v)
                 powerRise = weightOverall * g * speedVertical;
 
                 // P = Pa + Pr + Pc
                 powerTotal = powerWind + powerResistance + powerRise;
-                //Sys.println("DEBUG: onUpdate() KM/H    : " + sValue);
-                //Sys.println("DEBUG: onUpdate() KM      : " + mValue);
-                Sys.println("DEBUG: onUpdate() HÖHENMETER: " + aValue);
-                //Sys.println("DEBUG: onUpdate() WATT    : " + powerTotal);
-                Sys.println("DEBUG: onUpdate() PRESSURE/M: " + totalPressure);
+                Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
+                Sys.println("DEBUG: onUpdate() KM         : " + mValue);
+                Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
+                Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
+                Sys.println("DEBUG: onUpdate() PreassureDW: " + totalPressureDown);
+                Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
                 //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
 
@@ -378,9 +384,6 @@ class powerMView extends WatchUi.DataField {
                     fitField2.setData(kgValue.toNumber()); 
                     fitField3.setData(avValue.toNumber());
                 }
-
-
-
             } else {
                 wValue = 0.00f;
             }
@@ -400,7 +403,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelSpeed.setColor(Graphics.COLOR_BLACK);
         }
-        labelSpeed.setText("SPEED");
+        labelSpeed.setText("km/h Ø");
 
         var speed = View.findDrawableById("speed") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -408,7 +411,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             speed.setColor(Graphics.COLOR_BLACK);
         }
-        speed.setText(sValue.format("%.2f"));
+        speed.setText(asValue.format("%.2f"));
 
         var labelDistance = View.findDrawableById("labelDistance") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -416,7 +419,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelDistance.setColor(Graphics.COLOR_BLACK);
         }
-        labelDistance.setText("KM");
+        labelDistance.setText("km");
 
         var distance = View.findDrawableById("distance") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -432,7 +435,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelHr.setColor(Graphics.COLOR_BLACK);
         }
-        labelHr.setText("HRM");
+        labelHr.setText("hrm");
 
         var hr = View.findDrawableById("bpm") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -448,7 +451,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             lWAverage.setColor(Graphics.COLOR_BLACK);
         }
-        lWAverage.setText("Watt/Ø");
+        lWAverage.setText("watt/Ø");
 
         var wAverage = View.findDrawableById("wAverage") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -464,7 +467,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelAscent.setColor(Graphics.COLOR_BLACK);
         }
-        labelAscent.setText("UP");
+        labelAscent.setText("up m");
 
         var ascent = View.findDrawableById("ascent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -480,7 +483,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelAPressure.setColor(Graphics.COLOR_BLACK);
         }
-        labelAPressure.setText("PA/m");
+        labelAPressure.setText("hPA/m");
 
         var aPressure = View.findDrawableById("aPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -488,7 +491,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             aPressure.setColor(Graphics.COLOR_BLACK);
         }
-        aPressure.setText(dValue.format("%.2f"));
+        aPressure.setText(totalPressureUp.format("%.2f"));
 
         var lKgWatt = View.findDrawableById("lKgWatt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -496,7 +499,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             lKgWatt.setColor(Graphics.COLOR_BLACK);
         }
-        lKgWatt.setText("WATT/KG");
+        lKgWatt.setText("watt/kg");
 
         var kgWatt = View.findDrawableById("kgWatt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -512,7 +515,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelWatt.setColor(Graphics.COLOR_BLACK);
         }
-        labelWatt.setText("WATT");
+        labelWatt.setText("watt");
 
         var watt = View.findDrawableById("watt") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {

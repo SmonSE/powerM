@@ -34,7 +34,6 @@
         -->
         <iq:languages>
             <iq:language>deu</iq:language>
-            <iq:language>eng</iq:language>
         </iq:languages>
         <!--
             Use "Monkey C: Configure Monkey Barrel" from the Visual Studio Code
