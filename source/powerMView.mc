@@ -317,21 +317,24 @@ class powerMView extends WatchUi.DataField {
                     count = count + 1;
 
                     if (count == 1) {
-
                         dValue = dValue.toFloat() * 0.01;                             // convert pa to hpa
                         Sys.println("DEBUG: dValue(startPressure) :" + dValue + " >= " + startPressure);
                         if (dValue >= startPressure) {
                             calcPressure = dValue - startPressure;
-                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                            paMeter = (paMeter * 100) / 2;                           // this fomula makes the magic part
+                            paMeter = calcPressure * 8.4;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = (paMeter * 100);                           // this fomula makes the magic part
                             totalPressureUp += paMeter;      
                             startPressure = dValue;                                              
                             dValue = paMeter;
-                            Sys.println("DEBUG: paMeter() :" + paMeter);
+                            Sys.println("DEBUG: paMeter( up ) :" + paMeter);
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
+                        } else {
+                            startPressure = dValue;
+                            Sys.println("DEBUG: paMeter(down) :" + paMeter);
                         } 
+
                         count = 0;
                     }  
                 } 
@@ -474,7 +477,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelAscent.setColor(Graphics.COLOR_BLACK);
         }
-        labelAscent.setText("up m");
+        labelAscent.setText("hPa m");
 
         var ascent = View.findDrawableById("ascent") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -482,7 +485,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             ascent.setColor(Graphics.COLOR_BLACK);
         }
-        ascent.setText(aValue.format("%.2f"));
+        ascent.setText(paMeter.format("%.2f"));
 
         var labelAPressure = View.findDrawableById("labelAPressure") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
