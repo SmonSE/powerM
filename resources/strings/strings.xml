@@ -31,10 +31,10 @@
     <string id="rollingDrag_3">Road: 0.008</string>
     <string id="rollingDrag_4">MTB: 0.009</string>
      <!--                                            -->   
-    <string id="soil_title">Faktor für Untergrund</string>
-    <string id="soil_1">Trainer: 0.85</string>
-    <string id="soil_2">Asphalt: 1.0</string>
-    <string id="soil_3">Schotter: 1.5</string>
-    <string id="soil_4">Waldboden: 2.5</string>    
+    <string id="ground_title">Faktor für Untergrund</string>
+    <string id="ground_1">Trainer: 0.85</string>
+    <string id="ground_2">Asphalt: 1.0</string>
+    <string id="ground_3">Schotter: 1.5</string>
+    <string id="ground_4">Waldboden: 2.5</string>    
 
 </strings>

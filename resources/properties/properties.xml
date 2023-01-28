@@ -7,5 +7,5 @@
     <property id="drag_prop" type="number">1</property>
     <property id="airDensity_prop" type="float">1.205</property>
     <property id="rollingDrag_prop" type="number">1</property>
-    <property id="soil_prop" type="number">1</property>
+    <property id="ground_prop" type="number">1</property>
 </properties>

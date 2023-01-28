@@ -48,12 +48,12 @@
     	    </settingConfig>
     	</setting>
         <!--                                                                    --> 
-        <setting propertyKey="@Properties.soil_prop" title="@Strings.soil_title">
+        <setting propertyKey="@Properties.ground_prop" title="@Strings.ground_title">
     		<settingConfig type="list">
-    		<listEntry value="1">@Strings.soil_1</listEntry>
-    		<listEntry value="2">@Strings.soil_2</listEntry>
-    		<listEntry value="3">@Strings.soil_3</listEntry>
-            <listEntry value="4">@Strings.soil_4</listEntry>
+    		<listEntry value="1">@Strings.ground_1</listEntry>
+    		<listEntry value="2">@Strings.ground_2</listEntry>
+    		<listEntry value="3">@Strings.ground_3</listEntry>
+            <listEntry value="4">@Strings.ground_4</listEntry>
     	    </settingConfig>
     	</setting>
 

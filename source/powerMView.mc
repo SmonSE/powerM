@@ -29,32 +29,28 @@ class powerMView extends WatchUi.DataField {
     hidden var cdA              as Numeric;
     hidden var airDensity       as Numeric;
     hidden var rollingDrag      as Numeric;
-    hidden var soil             as Numeric;
+    hidden var ground           as Numeric;
 
     var startWatt = false;                              // Set Watt value at the beginning to avoid empty data field
     var start = false;                                  // Set StartPresure once at the beginning
     var stopCount = false;                              // Stop Counting if speed is 0
+    var updateStatus = false;                           // Watt Update: true= 1sec; false=10m
 
     var count = 0;                                      // Time Counter
-    var drop = 0;                                       // Höhenunterschied 
-    var rise = 0;                                       // Aufstieg / Anstieg
-    var speedMS = 0;                                    // Geschwindigkeit meter pro sekunde
     var weightOverall = 0;                              // Gewicht Fahrer + Bike + Equipment
-    var riseDec = 0;                                    // Aufstieg / 100 
-    var speedVertical = 0;                              // Vertikale Geschwindigkeit (Geschwindigkeit/Aufstieg)
     var weightRider = 0;                                // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
     var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
-
+                             
+    var Pa = 0;                                         // Pa = Luftwiderstand
+    var Pr = 0;                                         // Pr = Rollwiderstand / Rollreibungszahl
+    var Pc = 0;                                         // Pc = Steigungswiderstand
+    var Pm = 0;                                         // Pm = Mechanische Widerstand
+    var k = 0;                                          // Steigung in %
+    
     var startPressure = 0;
     var totalPressureUp = 0;
     var paMeter = 0;
     var calcPressure = 0;
-
-    var Pa = 0;
-    var Pr = 0;
-    var Pc = 0;
-    var Pm = 0;
-    var k = 0;
 
     var powerTotal = 0;
     var powerOverall = 0;
@@ -79,13 +75,13 @@ class powerMView extends WatchUi.DataField {
         asValue = 0.00f;
         kgValue = 0.00f;
 
-        //weightRider = userProfile.weight / 1000;                            // Get Weight from User Profil on init
+        //weightRider = userProfile.weight / 1000;                        // Get Weight from User Profil on init
         weightRider = app.getProperty("riderWeight_prop").toFloat();
-        bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat();   // Gewicht Bike + Equipment
-        cdA = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
-        airDensity = app.getProperty("airDensity_prop").toFloat();          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
-        rollingDrag = app.getProperty("rollingDrag_prop").toNumber();       // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
-        soil = app.getProperty("soil_prop").toNumber();                     // Faktor für Untergrund Trainer, Asphalt, Schotterweg, Waldweg
+        bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat(); // Gewicht Bike + Equipment
+        cdA = app.getProperty("drag_prop").toNumber();                    // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+        airDensity = app.getProperty("airDensity_prop").toFloat();        // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
+        rollingDrag = app.getProperty("rollingDrag_prop").toNumber();     // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
+        ground = app.getProperty("ground_prop").toNumber();               // Faktor für Untergrund Trainer, Asphalt, Schotterweg, Waldweg
 
         switch ( cdA ) {
             case 1: {
@@ -133,25 +129,25 @@ class powerMView extends WatchUi.DataField {
             }
         }
 
-        switch ( soil ) {
+        switch ( ground ) {
             case 1: {
-                soil = 0.85;
+                ground = 0.85;
                 break;
             }
             case 2: {
-                soil = 1;
+                ground = 1;
                 break;
             }
             case 3: {
-                soil = 1.5;
+                ground = 1.5;
                 break;
             }
             case 4: {
-                soil = 3.0;
+                ground = 3.0;
                 break;
             }
             default: {
-                soil = 0.00;
+                ground = 0.00;
                 break;
             }
         }
@@ -171,7 +167,7 @@ class powerMView extends WatchUi.DataField {
         Sys.println("DEBUG: Properties ( cdA             ): " + cdA);
         Sys.println("DEBUG: Properties ( airDensity      ): " + airDensity);
         Sys.println("DEBUG: Properties ( rolling drag    ): " + rollingDrag);
-        Sys.println("DEBUG: Properties ( soil            ): " + soil);
+        Sys.println("DEBUG: Properties ( ground          ): " + ground);
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -250,7 +246,6 @@ class powerMView extends WatchUi.DataField {
     // Note that compute() and onUpdate() are asynchronous, and there is no
     // guarantee that compute() will be called before onUpdate().
     function compute(info as Activity.Info) as Void {
-        // See Activity.Info in the documentation for available information.
 
         // Speed in km/h
         if(info has :currentSpeed){
@@ -315,6 +310,7 @@ class powerMView extends WatchUi.DataField {
                 if (checkMValue >= checkNewDistance) {
                     newDistance = newDistance + 0.01;
                     count = count + 1;
+                    updateStatus = true;
 
                     if (count == 1) {
                         dValue = dValue.toFloat() * 0.01;                              // convert pa to hpa
@@ -334,11 +330,9 @@ class powerMView extends WatchUi.DataField {
                             startPressure = dValue;
                             //Sys.println("DEBUG: paMeter(down) :" + paMeter);
                         } 
-
                         count = 0;
                     }  
                 } 
-
             } else {
                 dValue = 0.00f;
             }
@@ -347,21 +341,16 @@ class powerMView extends WatchUi.DataField {
         // Watt
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
-                // Pa = Luftwiderstand
-                // Pr = Rollwiderstand / Rollreibungszahl = 0,009
-                // Pc = Steigungswiderstand
-                // Pm = Mechanische Widerstand
-
                 // Weight of Fahrer + Fahrrad + Ausrüstung(Trinken etc.)
                 weightOverall = weightRider + bikeEquipWeight;
 
-                // Pr = C1 * m * g * v  -> Pr = (C1 * Soil) * m * g * v
+                // Pr = C1 * m * g * v 
                 Pr = rollingDrag * weightOverall * g * (sValue/3.6);
 
-                // Pa = 0.5 * p * cdA * v * (v-vw)2
-                Pa = 0.5 * airDensity * cdA * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
+                // Pa = 0.5 * p * cdA * v * (v-vw)2 or -> Pa = 0.5 * p * (cdA * ground) * v * (v-vw)2
+                Pa = 0.5 * airDensity * (cdA * ground) * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
 
-                // Pc = (i/100) * m * g * v
+                // Pc = (k/100) * m * g * v
                 Pc = (k/109) * weightOverall * g * (sValue/3.6);
 
                 // Pm = (Pr + Pa + Pc) * 0.025
@@ -378,17 +367,15 @@ class powerMView extends WatchUi.DataField {
 
                 wValue = powerTotal;
 
-                if (sValue > 0) { 
+                if (sValue > 0 && updateStatus == true) { 
                     // Watt Average
                     powerOverall = powerOverall + powerTotal;
                     powerCount = powerCount + 1;
                     powerAverage = powerOverall / powerCount;
                     avValue = powerAverage;
-                    //Sys.println("DEBUG: onUpdate() powerAverage    : " + powerAverage);
 
                     // Watt / KG
                     kgValue = powerAverage / weightRider;
-                    //Sys.println("DEBUG: onUpdate() kgValue         : " + kgValue);
 
                     // Add Values to FitContributor
                     fitField1.setData(wValue.toNumber()); 
@@ -396,7 +383,7 @@ class powerMView extends WatchUi.DataField {
                     fitField3.setData(avValue.toNumber());
                 }
             } else {
-                wValue = 0.00f;
+                sValue = 0.00f;
             }
         }
     }
@@ -407,7 +394,6 @@ class powerMView extends WatchUi.DataField {
         // Set the background color
         (View.findDrawableById("Background") as Text).setColor(getBackgroundColor());
 
-        // Set the foreground color and value
         var labelSpeed = View.findDrawableById("labelSpeed") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
             labelSpeed.setColor(Graphics.COLOR_WHITE);
@@ -540,10 +526,10 @@ class powerMView extends WatchUi.DataField {
             watt.setText(wValue.format("%i"));
             startWatt = true;
         } 
-        if (wValue.toFloat() > 0) {
-            watt.setText(wValue.format("%i"));          
+        if (wValue.toFloat() > 0 && updateStatus == true) {
+            watt.setText(wValue.format("%i"));      
         }
-        
+        updateStatus = false;
 
         // Call parent's onUpdate(dc) to redraw the layout
         View.onUpdate(dc);
