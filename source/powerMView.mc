@@ -305,12 +305,13 @@ class powerMView extends WatchUi.DataField {
                     startPressure = startPressure.toFloat() * 0.01;             // convert pa to hpa
                     Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
-                }   
+                } 
+
+                dValue = info.meanSeaLevelPressure as Number; 
 
                 var checkMValue = mValue.toDouble();
                 var checkNewDistance = newDistance.toDouble();
-                Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
-
+                //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
                 if (checkMValue >= checkNewDistance) {
                     newDistance = newDistance + 0.01;
                     count = count + 1;
@@ -318,10 +319,11 @@ class powerMView extends WatchUi.DataField {
                     if (count == 1) {
 
                         dValue = dValue.toFloat() * 0.01;                             // convert pa to hpa
+                        Sys.println("DEBUG: dValue(startPressure) :" + dValue + " >= " + startPressure);
                         if (dValue >= startPressure) {
                             calcPressure = dValue - startPressure;
                             paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                            paMeter = (paMeter * -100) / 2;                           // this fomula makes the magic part
+                            paMeter = (paMeter * 100) / 2;                           // this fomula makes the magic part
                             totalPressureUp += paMeter;      
                             startPressure = dValue;                                              
                             dValue = paMeter;
@@ -370,7 +372,6 @@ class powerMView extends WatchUi.DataField {
                 Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
                 Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
                 Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
-                //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
 
                 if (sValue > 0) { 
