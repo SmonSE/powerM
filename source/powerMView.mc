@@ -26,7 +26,7 @@ class powerMView extends WatchUi.DataField {
     hidden var kgValue as Numeric;                      // Watt / kg
 
     hidden var bikeEquipWeight  as Numeric;
-    hidden var drag             as Numeric;
+    hidden var cdA              as Numeric;
     hidden var airDensity       as Numeric;
     hidden var rollingDrag      as Numeric;
     hidden var soil             as Numeric;
@@ -47,19 +47,19 @@ class powerMView extends WatchUi.DataField {
 
     var startPressure = 0;
     var totalPressureUp = 0;
-    var totalPressureDown = 0;
     var paMeter = 0;
-    var paMeterD = 0;
     var calcPressure = 0;
+
+    var Pa = 0;
+    var Pr = 0;
+    var Pc = 0;
+    var Pm = 0;
+    var k = 0;
 
     var powerTotal = 0;
     var powerOverall = 0;
     var powerAverage = 0;
     var powerCount = 0;
-    var powerWind = 0;
-    var powerResistance = 0;
-    var powerRise = 0;
-
     var newDistance = 0.00;
 
     var fitField1;
@@ -82,30 +82,30 @@ class powerMView extends WatchUi.DataField {
         //weightRider = userProfile.weight / 1000;                            // Get Weight from User Profil on init
         weightRider = app.getProperty("riderWeight_prop").toFloat();
         bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat();   // Gewicht Bike + Equipment
-        drag = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
+        cdA = app.getProperty("drag_prop").toNumber();                     // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
         airDensity = app.getProperty("airDensity_prop").toFloat();          // Luftdichte: 1.205 -> API: 3.2.0 weather can be calculated .. not for edge 130 :(
         rollingDrag = app.getProperty("rollingDrag_prop").toNumber();       // Rollreibungszahl cr des Reifens / Rollentrainer: 0.004, Race: 0.006, Tour: 0.008, Enduro: 0.009
         soil = app.getProperty("soil_prop").toNumber();                     // Faktor für Untergrund Trainer, Asphalt, Schotterweg, Waldweg
 
-        switch ( drag ) {
+        switch ( cdA ) {
             case 1: {
-                drag = 0.25;
+                cdA = 0.25;
                 break;
             }
             case 2: {
-                drag = 0.28;
+                cdA = 0.28;
                 break;
             }
             case 3: {
-                drag = 0.45;
+                cdA = 0.45;
                 break;
             }
             case 4: {
-                drag = 0.525;
+                cdA = 0.525;
                 break;
             }
             default: {
-                drag = 0.00;
+                cdA = 0.00;
                 break;
             }
         }
@@ -128,7 +128,7 @@ class powerMView extends WatchUi.DataField {
                 break;
             }
             default: {
-                drag = 0.00;
+                rollingDrag = 0.00;
                 break;
             }
         }
@@ -151,7 +151,7 @@ class powerMView extends WatchUi.DataField {
                 break;
             }
             default: {
-                drag = 0.00;
+                soil = 0.00;
                 break;
             }
         }
@@ -168,7 +168,7 @@ class powerMView extends WatchUi.DataField {
        
         Sys.println("DEBUG: Properties ( riderWeight     ): " + weightRider);
         Sys.println("DEBUG: Properties ( bikeEquipWeight ): " + bikeEquipWeight);
-        Sys.println("DEBUG: Properties ( drag            ): " + drag);
+        Sys.println("DEBUG: Properties ( cdA             ): " + cdA);
         Sys.println("DEBUG: Properties ( airDensity      ): " + airDensity);
         Sys.println("DEBUG: Properties ( rolling drag    ): " + rollingDrag);
         Sys.println("DEBUG: Properties ( soil            ): " + soil);
@@ -306,30 +306,32 @@ class powerMView extends WatchUi.DataField {
                     Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
                 }   
-                
-                dValue = info.meanSeaLevelPressure as Number;  
-                if (dValue > 0) {                          
-                    dValue = dValue.toFloat() * 0.01;                             // convert pa to hpa
-                    if (dValue >= startPressure) {
-                        calcPressure = dValue - startPressure;
-                        paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                        paMeter = (paMeter * -100) / 2;                           // this fomula makes the magic part
-                        totalPressureUp += paMeter;      
-                        startPressure = dValue;                                              
-                        dValue = paMeter;
-                        Sys.println("DEBUG: paMeter() :" + paMeter);
 
-                    } else if (dValue < startPressure) {
-                        calcPressure = dValue - startPressure;
-                        paMeterD = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                        paMeterD = (paMeterD * -100) / 2;                          // this fomula makes the magic part
-                        totalPressureDown += paMeterD;          
-                        startPressure = dValue;                                              
-                        Sys.println("DEBUG: paMeterD() :" + paMeterD); 
+                var checkMValue = mValue.toDouble();
+                var checkNewDistance = newDistance.toDouble();
+                Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
 
-                    } else {
-                        Sys.println("DEBUG: else()!"); 
-                    }
+                if (checkMValue >= checkNewDistance) {
+                    newDistance = newDistance + 0.01;
+                    count = count + 1;
+
+                    if (count == 1) {
+
+                        dValue = dValue.toFloat() * 0.01;                             // convert pa to hpa
+                        if (dValue >= startPressure) {
+                            calcPressure = dValue - startPressure;
+                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = (paMeter * -100) / 2;                           // this fomula makes the magic part
+                            totalPressureUp += paMeter;      
+                            startPressure = dValue;                                              
+                            dValue = paMeter;
+                            Sys.println("DEBUG: paMeter() :" + paMeter);
+
+                            // k = (h/a) * 100 
+                            k = (paMeter/10) * 100;
+                        } 
+                        count = 0;
+                    }  
                 } 
 
             } else {
@@ -343,26 +345,30 @@ class powerMView extends WatchUi.DataField {
                 // Pa = Luftwiderstand
                 // Pr = Rollwiderstand / Rollreibungszahl = 0,009
                 // Pc = Steigungswiderstand
-                rise = paMeter / (Math.sqrt(10 * 10 - paMeter * paMeter)) * 100;
-                speedMS = sValue / 3.6;                                             // Speed in m per sec
+                // Pm = Mechanische Widerstand
+
+                // Weight of Fahrer + Fahrrad + Ausrüstung(Trinken etc.)
                 weightOverall = weightRider + bikeEquipWeight;
-                riseDec = rise / 100;
-                speedVertical = riseDec * speedMS / ((1 + riseDec * riseDec) * (1 + riseDec * riseDec));
 
-                // waero
-                powerWind = airDensity * 0.5 * drag * speedMS * speedMS * speedMS;
-                // wrr = (Crr * m * g * v) 
-                powerResistance = weightOverall * g * (rollingDrag * soil) * speedMS;
-                // wPE = (s * m * g * v)
-                powerRise = weightOverall * g * speedVertical;
+                // Pr = C1 * m * g * v  -> Pr = (C1 * Soil) * m * g * v
+                Pr = rollingDrag * weightOverall * g * (sValue/3.6);
 
-                // P = Pa + Pr + Pc
-                powerTotal = powerWind + powerResistance + powerRise;
+                // Pa = 0.5 * p * cdA * v * (v-vw)2
+                Pa = 0.5 * airDensity * cdA * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
+
+                // Pc = (i/100) * m * g * v
+                Pc = (k/109) * weightOverall * g * (sValue/3.6);
+
+                // Pm = (Pr + Pa + Pc) * 0.025
+                Pm = (Pr + Pa + Pc) * 0.025;
+
+                // powerTotal = Pr + Pa + Pc + Pm   -> Pm not needed at Trainer * 1.0
+                powerTotal = Pr + Pa + Pc + Pm;
+
                 Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
                 Sys.println("DEBUG: onUpdate() KM         : " + mValue);
                 Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
                 Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
-                Sys.println("DEBUG: onUpdate() PreassureDW: " + totalPressureDown);
                 Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
                 //Sys.println("DEBUG: onUpdate() WEIGHT  : " + weightRider);
                 wValue = powerTotal;
@@ -529,24 +535,10 @@ class powerMView extends WatchUi.DataField {
             watt.setText(wValue.format("%i"));
             startWatt = true;
         } 
-
-        var checkMValue = mValue.toDouble();
-        var checkNewDistance = newDistance.toDouble();
-        //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
-
-        if (checkMValue >= checkNewDistance) {
-            newDistance = newDistance + 0.01;
-            count = count + 1;
-
-            if (count == 1) {
-                if (wValue.toFloat() > 0) {
-                    watt.setText(wValue.format("%i"));
-                }
-                count = 0;
-            }  
-        } else {
-            //Sys.println("DEBUG: onUpdate() else");
+        if (wValue.toFloat() > 0) {
+            watt.setText(wValue.format("%i"));          
         }
+        
 
         // Call parent's onUpdate(dc) to redraw the layout
         View.onUpdate(dc);
