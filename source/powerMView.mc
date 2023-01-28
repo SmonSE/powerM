@@ -313,7 +313,7 @@ class powerMView extends WatchUi.DataField {
                     if (dValue >= startPressure) {
                         calcPressure = dValue - startPressure;
                         paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                        paMeter = (paMeter * -100) / 2;                            // this fomula makes the magic part
+                        paMeter = (paMeter * -100) / 2;                           // this fomula makes the magic part
                         totalPressureUp += paMeter;      
                         startPressure = dValue;                                              
                         dValue = paMeter;
@@ -322,7 +322,7 @@ class powerMView extends WatchUi.DataField {
                     } else if (dValue < startPressure) {
                         calcPressure = dValue - startPressure;
                         paMeterD = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                        paMeterD = (paMeterD * -100) / 2;                           // this fomula makes the magic part
+                        paMeterD = (paMeterD * -100) / 2;                          // this fomula makes the magic part
                         totalPressureDown += paMeterD;          
                         startPressure = dValue;                                              
                         Sys.println("DEBUG: paMeterD() :" + paMeterD); 
