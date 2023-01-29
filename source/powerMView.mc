@@ -6,14 +6,12 @@ import Toybox.WatchUi;
 using Toybox.System as Sys;
 using Toybox.Application as App;
 using Toybox.ActivityMonitor;
-using Toybox.UserProfile;
 using Toybox.FitContributor as Fit;
 
 class powerMView extends WatchUi.DataField {
 
     //getActivityInfo
     var actInfo = Activity.getActivityInfo();
-    var userProfile = UserProfile.getProfile();
 
     hidden var sValue  as Numeric;                      // Speed
     hidden var mValue  as Numeric;                      // Distance
@@ -36,7 +34,6 @@ class powerMView extends WatchUi.DataField {
     var stopCount = false;                              // Stop Counting if speed is 0
     var updateStatus = false;                           // Watt Update: true= 1sec; false=10m
 
-    var count = 0;                                      // Time Counter
     var weightOverall = 0;                              // Gewicht Fahrer + Bike + Equipment
     var weightRider = 0;                                // Gewicht Fahrer (value wird aus Garmin Profil geholt und überschrieben)
     var g = 9.81;                                       // Die Fallbeschleunigung hat auf der Erde den Wert g = 9,81 ms2
@@ -61,7 +58,6 @@ class powerMView extends WatchUi.DataField {
     var fitField1;
     var fitField2;
     var fitField3;
-    var powerField;
 
     function initialize(app) {
         DataField.initialize();
@@ -76,7 +72,6 @@ class powerMView extends WatchUi.DataField {
         asValue = 0.00f;
         kgValue = 0.00f;
 
-        //weightRider = userProfile.weight / 1000;                        // Get Weight from User Profil on init
         weightRider = app.getProperty("riderWeight_prop").toFloat();
         bikeEquipWeight = app.getProperty("bike_Equip_Weight").toFloat(); // Gewicht Bike + Equipment
         cdA = app.getProperty("drag_prop").toNumber();                    // Luftreibungzahl Cw*A [m2], CdA = drag area -> Rollertrainer: 0.25, MTB: 0.525, Road: 0.28, 
@@ -154,7 +149,7 @@ class powerMView extends WatchUi.DataField {
         }
 
         // Create the custom FIT data field we want to record.
-        fitField1 = DataField.createField("watt_time", 0, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/time"});
+        fitField1 = DataField.createField("watt_time", 0, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"w", :nativeNum => 7});
         fitField1.setData(0); 
 
         fitField2 = DataField.createField("watt_kg", 1, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/kg"});
@@ -163,8 +158,6 @@ class powerMView extends WatchUi.DataField {
         fitField3 = DataField.createField("watt_average", 2, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/average"});
         fitField3.setData(0);  
 
-        powerField = createField("Power", 3, Fit.DATA_TYPE_SINT16, {:mesgType => Fit.MESG_TYPE_RECORD, :units => "W", :nativeNum => 7});
-       
         Sys.println("DEBUG: Properties ( riderWeight     ): " + weightRider);
         Sys.println("DEBUG: Properties ( bikeEquipWeight ): " + bikeEquipWeight);
         Sys.println("DEBUG: Properties ( cdA             ): " + cdA);
@@ -176,7 +169,6 @@ class powerMView extends WatchUi.DataField {
     // Set your layout here. Anytime the size of obscurity of
     // the draw context is changed this will be called.
     function onLayout(dc as Dc) as Void {
-        var obscurityFlags = DataField.getObscurityFlags();
         View.setLayout(Rez.Layouts.MainLayout(dc));
 
         var lSpeedView = View.findDrawableById("labelSpeed");
@@ -301,26 +293,24 @@ class powerMView extends WatchUi.DataField {
                 if (start == false) {
                     startPressure = info.meanSeaLevelPressure as Number; 
                     startPressure = startPressure.toFloat() * 0.01;             // convert pa to hpa
-                    //Sys.println("DEBUG: startPressure() :" + startPressure); 
+                    Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
                 } 
 
                 dValue = info.meanSeaLevelPressure as Number; 
-
+                dValue = dValue.toFloat() * 0.01;                              // convert pa to hpa
+                
                 var checkMValue = mValue.toDouble();
                 var checkNewDistance = newDistance.toDouble();
                 //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
                 if (checkMValue >= checkNewDistance) {
                     newDistance = newDistance + 0.01;
-                    count = count + 1;
                     updateStatus = true;
 
-                    if (count == 1) {
-                        dValue = dValue.toFloat() * 0.01;                              // convert pa to hpa
-                        //Sys.println("DEBUG: dValue(startPressure) :" + dValue + " >= " + startPressure);
+                    if (updateStatus == true) {
                         if (dValue >= startPressure) {
                             calcPressure = dValue - startPressure;
-                            paMeter = calcPressure * 8.4;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
                             paMeter = (paMeter * 100);                                // this fomula makes the magic part
                             totalPressureUp += paMeter;      
                             startPressure = dValue;                                              
@@ -329,11 +319,19 @@ class powerMView extends WatchUi.DataField {
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
+                            //Sys.println("DEBUG: steigung( % ) :" + k);
                         } else {
-                            startPressure = dValue;
+                            calcPressure = dValue - startPressure;
+                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = (paMeter * 100);                                // this fomula makes the magic part
+                            totalPressureUp += paMeter;      
+                            startPressure = dValue;  
+                            dValue = paMeter;
                             //Sys.println("DEBUG: paMeter(down) :" + paMeter);
+
+                            // k = (h/a) * 100 
+                            k = (paMeter/10) * 100;
                         } 
-                        count = 0;
                     }  
                 } 
             } else {
@@ -344,47 +342,44 @@ class powerMView extends WatchUi.DataField {
         // Watt
         if(info has :currentSpeed){
             if(info.currentSpeed != null){
-                // Weight of Fahrer + Fahrrad + Ausrüstung(Trinken etc.)
-                weightOverall = weightRider + bikeEquipWeight;
+                if (updateStatus == true) {
+                    // Weight of Fahrer + Fahrrad + Ausrüstung(Trinken etc.)
+                    weightOverall = weightRider + bikeEquipWeight;
 
-                // Pr = C1 * m * g * v 
-                Pr = rollingDrag * weightOverall * g * (sValue/3.6);
+                    // Pr = C1 * m * g * v 
+                    Pr = rollingDrag * weightOverall * g * (sValue/3.6);
+                    // Pa = 0.5 * p * cdA * v * (v-vw)2 or -> Pa = 0.5 * p * (cdA * ground) * v * (v-vw)2
+                    Pa = 0.5 * airDensity * (cdA * ground) * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
+                    // Pc = (k/100) * m * g * v
+                    Pc = (k/109) * weightOverall * g * (sValue/3.6);
+                    // Pm = (Pr + Pa + Pc) * 0.025
+                    Pm = (Pr + Pa + Pc) * 0.025;
+                    // powerTotal = Pr + Pa + Pc + Pm   -> Pm not needed at Trainer * 1.0
+                    powerTotal = Pr + Pa + Pc + Pm;
 
-                // Pa = 0.5 * p * cdA * v * (v-vw)2 or -> Pa = 0.5 * p * (cdA * ground) * v * (v-vw)2
-                Pa = 0.5 * airDensity * (cdA * ground) * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
+                    //Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
+                    //Sys.println("DEBUG: onUpdate() KM         : " + mValue);
+                    //Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
+                    //Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
+                    //Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
 
-                // Pc = (k/100) * m * g * v
-                Pc = (k/109) * weightOverall * g * (sValue/3.6);
+                    wValue = powerTotal;
 
-                // Pm = (Pr + Pa + Pc) * 0.025
-                Pm = (Pr + Pa + Pc) * 0.025;
+                    if (sValue > 0 && updateStatus == true) { 
+                        // Watt Average
+                        powerOverall = powerOverall + powerTotal;
+                        powerCount = powerCount + 1;
+                        powerAverage = powerOverall / powerCount;
+                        avValue = powerAverage;
 
-                // powerTotal = Pr + Pa + Pc + Pm   -> Pm not needed at Trainer * 1.0
-                powerTotal = Pr + Pa + Pc + Pm;
+                        // Watt / KG
+                        kgValue = powerAverage / weightRider;
 
-                //Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
-                //Sys.println("DEBUG: onUpdate() KM         : " + mValue);
-                //Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
-                //Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
-                //Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
-
-                wValue = powerTotal;
-
-                if (sValue > 0 && updateStatus == true) { 
-                    // Watt Average
-                    powerOverall = powerOverall + powerTotal;
-                    powerCount = powerCount + 1;
-                    powerAverage = powerOverall / powerCount;
-                    avValue = powerAverage;
-
-                    // Watt / KG
-                    kgValue = powerAverage / weightRider;
-
-                    // Add Values to FitContributor
-                    fitField1.setData(wValue.toNumber()); 
-                    fitField2.setData(kgValue.toNumber()); 
-                    fitField3.setData(avValue.toNumber());
-                    powerField.setData(powerTotal.toNumber());
+                        // Add Values to FitContributor
+                        fitField1.setData(wValue.toNumber()); 
+                        fitField2.setData(kgValue.toNumber()); 
+                        fitField3.setData(avValue.toNumber());
+                    }
                 }
             } else {
                 sValue = 0.00f;
