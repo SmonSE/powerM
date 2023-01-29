@@ -61,6 +61,7 @@ class powerMView extends WatchUi.DataField {
     var fitField1;
     var fitField2;
     var fitField3;
+    var powerField;
 
     function initialize(app) {
         DataField.initialize();
@@ -161,6 +162,8 @@ class powerMView extends WatchUi.DataField {
 
         fitField3 = DataField.createField("watt_average", 2, Fit.DATA_TYPE_SINT16, {:mesgType=>Fit.MESG_TYPE_RECORD, :units=>"watt/average"});
         fitField3.setData(0);  
+
+        powerField = createField("Power", 3, Fit.DATA_TYPE_SINT16, {:mesgType => Fit.MESG_TYPE_RECORD, :units => "W", :nativeNum => 7});
        
         Sys.println("DEBUG: Properties ( riderWeight     ): " + weightRider);
         Sys.println("DEBUG: Properties ( bikeEquipWeight ): " + bikeEquipWeight);
@@ -381,6 +384,7 @@ class powerMView extends WatchUi.DataField {
                     fitField1.setData(wValue.toNumber()); 
                     fitField2.setData(kgValue.toNumber()); 
                     fitField3.setData(avValue.toNumber());
+                    powerField.setData(powerTotal.toNumber());
                 }
             } else {
                 sValue = 0.00f;
