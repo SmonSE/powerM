@@ -287,18 +287,23 @@ class powerMView extends WatchUi.DataField {
             }
         }
 
+        // rawAmbientPressure       -> raw data 
+        // ambientPressure          -> smoothed by a two-stage filter
+        // meanSeaLevelPressure     -> gps data integrated
         // Ambient Pressure / Change to Barometer
-        if(info has :meanSeaLevelPressure){
-            if(info.meanSeaLevelPressure != null){
+        if(info has :ambientPressure){
+            if(info.ambientPressure != null){
                 if (start == false) {
-                    startPressure = info.meanSeaLevelPressure as Number; 
-                    startPressure = startPressure.toFloat() * 0.01;             // convert pa to hpa
+                    startPressure = info.ambientPressure as Number; 
+                    startPressure = startPressure.toFloat() * 0.0001;           // 0.0001 outside 0.01 simulator
                     Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
                 } 
 
-                dValue = info.meanSeaLevelPressure as Number; 
-                dValue = dValue.toFloat() * 0.01;                              // convert pa to hpa
+                dValue = info.ambientPressure as Number; 
+                dValue = dValue.toFloat() * 0.0001;                            // 0.0001 outside 0.01 simulator
+                var tracePressure = dValue;
+                Sys.println("DEBUG: tracePressure( ) :" + tracePressure);
                 
                 var checkMValue = mValue.toDouble();
                 var checkNewDistance = newDistance.toDouble();
@@ -315,11 +320,11 @@ class powerMView extends WatchUi.DataField {
                             totalPressureUp += paMeter;      
                             startPressure = dValue;                                              
                             dValue = paMeter;
-                            //Sys.println("DEBUG: paMeter( up ) :" + paMeter);
+                            Sys.println("DEBUG: paMeter( up ) :" + paMeter);
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
-                            //Sys.println("DEBUG: steigung( % ) :" + k);
+                            //Sys.println("DEBUG: steigung( up% ) :" + k);
                         } else {
                             calcPressure = dValue - startPressure;
                             paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
@@ -327,10 +332,11 @@ class powerMView extends WatchUi.DataField {
                             totalPressureUp += paMeter;      
                             startPressure = dValue;  
                             dValue = paMeter;
-                            //Sys.println("DEBUG: paMeter(down) :" + paMeter);
+                            Sys.println("DEBUG: paMeter(down) :" + paMeter);
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
+                            //Sys.println("DEBUG: steigung( down% ) :" + k);
                         } 
                     }  
                 } 
@@ -358,9 +364,9 @@ class powerMView extends WatchUi.DataField {
                     powerTotal = Pr + Pa + Pc + Pm;
 
                     //Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
-                    //Sys.println("DEBUG: onUpdate() KM         : " + mValue);
+                    Sys.println("DEBUG: onUpdate() KM         : " + mValue);
                     //Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
-                    //Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
+                    Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
                     //Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
 
                     wValue = powerTotal;
@@ -399,7 +405,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             labelSpeed.setColor(Graphics.COLOR_BLACK);
         }
-        labelSpeed.setText("km/h Ø");
+        labelSpeed.setText("kmh");
 
         var speed = View.findDrawableById("speed") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {
@@ -407,7 +413,7 @@ class powerMView extends WatchUi.DataField {
         } else {
             speed.setColor(Graphics.COLOR_BLACK);
         }
-        speed.setText(asValue.format("%.2f"));
+        speed.setText(sValue.format("%.2f"));
 
         var labelDistance = View.findDrawableById("labelDistance") as Text;
         if (getBackgroundColor() == Graphics.COLOR_BLACK) {

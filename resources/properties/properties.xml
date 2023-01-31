@@ -1,11 +1,11 @@
 <properties>
     <property id="appVersion" type="string">1.0.0</property>
     <property id="dis" type="number">0</property>
-    <!--          settings in app           -->
+    <!--          settings in app default MTB          -->
     <property id="riderWeight_prop" type="float">85.0</property>
-    <property id="bike_Equip_Weight" type="float">15.0</property>
-    <property id="drag_prop" type="number">1</property>
+    <property id="bike_Equip_Weight" type="float">10.0</property>
+    <property id="drag_prop" type="number">4</property>             
     <property id="airDensity_prop" type="float">1.205</property>
-    <property id="rollingDrag_prop" type="number">1</property>
-    <property id="ground_prop" type="number">1</property>
+    <property id="rollingDrag_prop" type="number">4</property>
+    <property id="ground_prop" type="number">2</property>
 </properties>
