@@ -296,20 +296,20 @@ class powerMView extends WatchUi.DataField {
                 if (start == false) {
                     startPressure = info.ambientPressure as Number; 
                     startPressure = startPressure.toFloat() * 0.0001;           // 0.0001 outside 0.01 simulator
-                    Sys.println("DEBUG: startPressure() :" + startPressure); 
+                    //Sys.println("DEBUG: startPressure() :" + startPressure); 
                     start = true;
                 } 
 
                 dValue = info.ambientPressure as Number; 
                 dValue = dValue.toFloat() * 0.0001;                            // 0.0001 outside 0.01 simulator
                 var tracePressure = dValue;
-                Sys.println("DEBUG: tracePressure( ) :" + tracePressure);
+                //Sys.println("DEBUG: tracePressure( ) :" + tracePressure);
                 
                 var checkMValue = mValue.toDouble();
                 var checkNewDistance = newDistance.toDouble();
                 //Sys.println("DEBUG: onUpdate() check: " + checkMValue + " == " + checkNewDistance);
                 if (checkMValue >= checkNewDistance) {
-                    newDistance = newDistance + 0.01;
+                    newDistance += 0.01;
                     updateStatus = true;
 
                     if (updateStatus == true) {
@@ -330,7 +330,7 @@ class powerMView extends WatchUi.DataField {
                             calcPressure = dValue - startPressure;
                             paMeter = calcPressure * 8.0;                   // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
                             paMeter = (paMeter * 100);                      // this fomula makes the magic part
-                            totalPressureUp += paMeter;                     // if Up it will count back to 0  
+                            //totalPressureUp += paMeter;                   // if Up it will count back to 0  
                             //totalPressureDown += paMeter;                 // if Down it will count Down
                             startPressure = dValue;  
                             dValue = paMeter;
@@ -374,16 +374,15 @@ class powerMView extends WatchUi.DataField {
 
                     if (sValue > 0 && updateStatus == true) { 
 
-                        if (wValue.toFloat() > 0) {
-                            // set powerTotal to wValue
+                        if (powerTotal > 0) {
                             wValue = powerTotal;
                         } else {
                             wValue = 0;
                         }
 
                         // Watt Average
-                        powerOverall = powerOverall + powerTotal;
-                        powerCount = powerCount + 1;
+                        powerOverall += powerTotal;
+                        powerCount += 1;
                         powerAverage = powerOverall / powerCount;
                         avValue = powerAverage;
 
@@ -534,8 +533,6 @@ class powerMView extends WatchUi.DataField {
         } else {
             watt.setColor(Graphics.COLOR_BLACK);
         }
-
-        // Watt will be updated every 10m -> if to avoid empty data field
         if (startWatt == false) {
             watt.setText(wValue.format("%i"));
             startWatt = true;
