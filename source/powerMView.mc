@@ -315,27 +315,30 @@ class powerMView extends WatchUi.DataField {
                     if (updateStatus == true) {
                         if (dValue >= startPressure) {
                             calcPressure = dValue - startPressure;
-                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                            paMeter = (paMeter * -100);                               // this fomula makes the magic part
+                            paMeter = calcPressure * 8.0;                   // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = (paMeter * 100);                      // this fomula makes the magic part
                             totalPressureUp += paMeter;      
                             startPressure = dValue;                                              
                             dValue = paMeter;
-                            Sys.println("DEBUG: paMeter( up ) :" + paMeter);
+                            //Sys.println("DEBUG: paMeter( up ) :" + paMeter);
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
+                            k = k * (-1);
                             //Sys.println("DEBUG: steigung( up% ) :" + k);
                         } else {
                             calcPressure = dValue - startPressure;
-                            paMeter = calcPressure * 8.0;                             // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
-                            paMeter = (paMeter * -100);                               // this fomula makes the magic part
-                            totalPressureUp += paMeter;      
+                            paMeter = calcPressure * 8.0;                   // 1 hPa 8,2 m bzw. 100 m 12,2 hPa.                              
+                            paMeter = (paMeter * 100);                      // this fomula makes the magic part
+                            totalPressureUp += paMeter;                     // if Up it will count back to 0  
+                            //totalPressureDown += paMeter;                 // if Down it will count Down
                             startPressure = dValue;  
                             dValue = paMeter;
-                            Sys.println("DEBUG: paMeter(down) :" + paMeter);
+                            //Sys.println("DEBUG: paMeter( down ) :" + paMeter);
 
                             // k = (h/a) * 100 
                             k = (paMeter/10) * 100;
+                            k = k * (-1);
                             //Sys.println("DEBUG: steigung( down% ) :" + k);
                         } 
                     }  
@@ -357,21 +360,27 @@ class powerMView extends WatchUi.DataField {
                     // Pa = 0.5 * p * cdA * v * (v-vw)2 or -> Pa = 0.5 * p * (cdA * ground) * v * (v-vw)2
                     Pa = 0.5 * airDensity * (cdA * ground) * (sValue/3.6) * ((sValue/3.6) * (sValue/3.6));
                     // Pc = (k/100) * m * g * v
-                    Pc = (k/109) * weightOverall * g * (sValue/3.6);
+                    Pc = (k/100) * weightOverall * g * (sValue/3.6);
                     // Pm = (Pr + Pa + Pc) * 0.025
                     Pm = (Pr + Pa + Pc) * 0.025;
                     // powerTotal = Pr + Pa + Pc + Pm   -> Pm not needed at Trainer * 1.0
                     powerTotal = Pr + Pa + Pc + Pm;
 
                     //Sys.println("DEBUG: onUpdate() KM/H       : " + sValue);
-                    Sys.println("DEBUG: onUpdate() KM         : " + mValue);
+                    //Sys.println("DEBUG: onUpdate() KM         : " + mValue);
                     //Sys.println("DEBUG: onUpdate() HÖHENMETER : " + aValue);
-                    Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
+                    //Sys.println("DEBUG: onUpdate() PreassureUP: " + totalPressureUp);
                     //Sys.println("DEBUG: onUpdate() WATT       : " + powerTotal);
 
-                    wValue = powerTotal;
-
                     if (sValue > 0 && updateStatus == true) { 
+
+                        if (wValue.toFloat() > 0) {
+                            // set powerTotal to wValue
+                            wValue = powerTotal;
+                        } else {
+                            wValue = 0;
+                        }
+
                         // Watt Average
                         powerOverall = powerOverall + powerTotal;
                         powerCount = powerCount + 1;
@@ -530,10 +539,10 @@ class powerMView extends WatchUi.DataField {
         if (startWatt == false) {
             watt.setText(wValue.format("%i"));
             startWatt = true;
+        } else {
+            watt.setText(wValue.format("%i")); 
         } 
-        if (wValue.toFloat() > 0 && updateStatus == true) {
-            watt.setText(wValue.format("%i"));      
-        }
+
         updateStatus = false;
 
         // Call parent's onUpdate(dc) to redraw the layout
