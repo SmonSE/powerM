@@ -12,7 +12,10 @@ I compared the watt calculation with a roller trainer and Zwift, where I calcula
 The biggest problem at the moment is that I can't include the wind force (headwind) in my calculations. 
 There are devices on the market that integrate such values using sensors, which the Edge unfortunately does not provide.
 
-## Fit File Simulation from Zwift Roller Trainer
+The altitude is measured using the integrated barometer because the GPS values are too erratic. Because of this, bad weather can lead to inaccurate values. Since I don't have a power meter on my bike, I can't guarantee 100% values. This is more of a guideline to compare your training routes.
+
+## Fit File Simulation 
+
 
 ![Screenshot](readme.png)
 
