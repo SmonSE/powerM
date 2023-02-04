@@ -14,10 +14,6 @@
     </fitContributions>
 
     <settings>
-        <setting propertyKey="@Properties.appVersion" title="@Strings.AppVersionTitle">
-            <settingConfig type="alphaNumeric" readonly="true" />
-        </setting>
-        <!--                                                                    --> 
         <setting propertyKey="@Properties.riderWeight_prop" title="@Strings.riderWeight_title">
     		<settingConfig type="numeric" readonly="false" />
     	</setting>
@@ -56,6 +52,19 @@
             <listEntry value="4">@Strings.ground_4</listEntry>
     	    </settingConfig>
     	</setting>
+        <!--                                                                    --> 
+        <setting propertyKey="@Properties.distance_prop" title="@Strings.distance_title">
+    		<settingConfig type="list">
+    		<listEntry value="1">@Strings.distance_1</listEntry>
+    		<listEntry value="2">@Strings.distance_2</listEntry>
+    		<listEntry value="3">@Strings.distance_3</listEntry>
+            <listEntry value="4">@Strings.distance_4</listEntry>
+    	    </settingConfig>
+    	</setting>
+        <!--                                                                    --> 
+        <setting propertyKey="@Properties.appVersion" title="@Strings.AppVersionTitle">
+            <settingConfig type="alphaNumeric" readonly="true" />
+        </setting>
 
     </settings>
 </resources>

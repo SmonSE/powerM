@@ -1,8 +1,4 @@
 <strings>
-
-    <string id="AppName">powerM</string>
-    <string id="AppVersionTitle">Version</string>
-    <!--                                            -->
     <string id="watt_label">Watt</string>
     <string id="watt_graph_label">Power in watt</string>
     <string id="watt_units">time</string>
@@ -36,5 +32,13 @@
     <string id="ground_2">Asphalt: 1.0</string>
     <string id="ground_3">Schotter: 1.5</string>
     <string id="ground_4">Waldboden: 2.5</string>    
-
+    <!--                                            -->   
+    <string id="distance_title">Update distance in m</string>
+    <string id="distance_1">Update every 10 m</string>
+    <string id="distance_2">Update every 20 m</string>
+    <string id="distance_3">Update every 30 m</string>
+    <string id="distance_4">Update every 30 m</string> 
+    <!--                                            --> 
+    <string id="AppName">powerM</string>
+    <string id="AppVersionTitle">Version</string>
 </strings>
