@@ -298,6 +298,9 @@ class powerMView extends WatchUi.DataField {
         if(info has :elapsedDistance){
             if(info.elapsedDistance != null){
                 mValue = info.elapsedDistance as Number / 1000;
+                var mVal = mValue.format("%.3f");
+                mValue = mVal.toDouble();
+                //Sys.println("DEBUG: mValue(2) :" + mValue + "  " + mVal); 
             } else {
                 mValue = 0.00f;
             }
