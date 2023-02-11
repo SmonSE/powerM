@@ -388,18 +388,18 @@ class powerMView extends WatchUi.DataField {
 
                         if (powerTotal > 0) {
                             wValue = powerTotal;
-                        } else {
-                            wValue = 0;
-                        }
 
-                        // Watt Average
-                        powerOverall += powerTotal;
-                        powerCount += 1;
-                        powerAverage = powerOverall / powerCount;
-                        avValue = powerAverage;
+                            // Watt Average
+                            powerOverall += powerTotal;
+                            powerCount += 1;
+                            powerAverage = powerOverall / powerCount;
+                            avValue = powerAverage;
 
                         // Watt / KG
                         kgValue = powerAverage / weightRider;
+                        } else {
+                            wValue = 0;
+                        }
 
                         // Add Values to FitContributor
                         fitField1.setData(wValue.toNumber()); 
